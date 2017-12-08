@@ -287,6 +287,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         print("length of frame: "+str(len(frame.index)))
     master_df = pd.concat(frames, ignore_index=True)
     df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    df.reset_index()
     print("length of master frame: "+str(len(df.index)))
     print ("Added all files to master data frame for processing")
     print(df.head())
@@ -325,7 +326,9 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
 
         frames.append(results) #add each results df to list for cancat
         frames_non_error.append(non_error_results)
+        print("finished searching for: "+EMAIL)
 
+    print("finished all searches, adding to CSV")
     #add the respective dfs together using concat
     master_results = pd.concat(frames, ignore_index=True)
     master_non_error_results = pd.concat(frames_non_error, ignore_index=True)
