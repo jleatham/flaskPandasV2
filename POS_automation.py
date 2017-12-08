@@ -289,6 +289,8 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
     print("length of master frame: "+str(len(df.index)))
     print ("Added all files to master data frame for processing")
+    print(df.head())
+    print(df.tail())
 
     frames = [] #re-initialize frames so we can concat below df's
     frames_non_error = []
