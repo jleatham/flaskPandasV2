@@ -286,12 +286,23 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     for frame in frames:
         print("length of frame: "+str(len(frame.index)))
     master_df = pd.concat(frames, ignore_index=True)
-    df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
-    df.reset_index()
+    #df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    master_df.reset_index()
     print("length of master frame: "+str(len(df.index)))
     print("Added all files to master data frame for processing")
-    print(df.head())
-    print(df.tail())
+    #print(df.head())
+    #print(df.tail())
+    
+    #narrow down the search fields to only stuff I care about
+    json_accounts = []
+    json_email = []
+    for v in data.values():
+        for account in v["accounts"]:
+            json_accounts.append(account)
+        json_email.append(v["email"]) 
+    print("done with getting json")
+    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | df["Salesrep Email"].str.contains(json_email)]
+    print("done with narrowing search results")
 
     frames = [] #re-initialize frames so we can concat below df's
     frames_non_error = []
