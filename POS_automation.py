@@ -25,7 +25,7 @@
 ##########################################################################################################
 ##########################################################################################################
 
-#test edit
+#test edit 2
 
 import pandas as pd
 import csv
@@ -67,7 +67,7 @@ least_recent_date = ""
 currentlyProcessingReports = "0"
 
 #home_file_path="/Users/jleatham/Documents/Programming/Python/automation/POS/" #work laptop
-home_file_path="/home/cisco/houston-pos/"  #ubuntu server
+home_file_path="/home/cisco/houston-pos-v2/"  #ubuntu server
 
 #Americas
     #Canada
