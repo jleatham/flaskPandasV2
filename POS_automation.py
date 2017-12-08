@@ -248,7 +248,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
                     text = f.read()
                 FILEDATA = StringIO(text)
                 df = pd.DataFrame() # create empty dataframe                       
-                df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"], dtype=str)
+                df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"])
                 shutil.move(file, old_pos_file_path+filename)
                 print ("processed: "+filename)
             except Exception as e:
@@ -283,9 +283,13 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
             os.remove(file)
 
     #concate all df's in frames
+    for frame in frames:
+        print("length of frame: "+str(len(frame.index)))
     master_df = pd.concat(frames, ignore_index=True)
     df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    print("length of master frame: "+str(len(df.index)))
     print ("Added all files to master data frame for processing")
+
     frames = [] #re-initialize frames so we can concat below df's
     frames_non_error = []
 
