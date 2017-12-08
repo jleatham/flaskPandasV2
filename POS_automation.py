@@ -248,7 +248,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
                     text = f.read()
                 FILEDATA = StringIO(text)
                 df = pd.DataFrame() # create empty dataframe                       
-                df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"])
+                df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"], dtype=str)
                 shutil.move(file, old_pos_file_path+filename)
                 print ("processed: "+filename)
             except Exception as e:
