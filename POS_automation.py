@@ -226,6 +226,129 @@ def check_mbr_v1(POS):
         print('{:^25}{:^25}{:^25}{:^25}{:^25}{:^25}{:^25}'.format(str(row[1]),str(row[3]),str(row[6]),str(row[4]),str(row[2]),str(row[7]),str(row[5])))
     print ("Time to process: "+ str(end - start))
 
+def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
+    global currentlyProcessingReports
+    currentlyProcessingReports = "1"
+    start = time.time()
+    #open json file and load to memory, create empty file if can't find json
+    if not (os.stat(am_list_json_filename).st_size == 0):
+        with open(am_list_json_filename) as data_file:
+            data = json.load(data_file)  
+    else:
+        data = {}
+
+    #add all new files into a single dataframe, then run through each json item and search individually.  add
+    #all results to single large dataframe and write to csv all at once
+    frames = [] #used to concat all files
+    for file in FILES:
+        filename = os.path.basename(file)
+        if not os.path.isfile(old_pos_file_path+filename): #if there is not a duplicate in olPOS already
+            try:
+                with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
+                    text = f.read()
+                FILEDATA = StringIO(text)
+                df = pd.DataFrame() # create empty dataframe                       
+                df = pd.read_csv(FILEDATA, encoding='cp1252',low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"])
+                shutil.move(file, old_pos_file_path+filename)
+                print ("processed: "+filename)
+            except Exception as e:
+                print ("file not readable in pandas: "+ file)
+                print (e)
+                print("Trying to fix")
+                #check if csv headers are not 1st line
+                #will rewrite the file and the program will try again next time it checks for new files
+                df2 = pd.read_csv(FILEDATA)
+                i = 0
+                if "POS Transaction ID/Unique ID" not in df.columns:
+                    while i < 4:
+                        df2 = pd.read_csv(FILEDATA,skiprows=[i])
+                        if "POS Transaction ID/Unique ID" not in df2.columns:
+                            print("Couldn't find POS data in row "+str(i))
+                            i += 1
+                        else:
+                            print("Found POS data in row "+str(i))
+                            i = 5
+                            with open(file, 'w') as f:
+                                df2.to_csv(f, index=False)
+                                print("re-wrote file: "+filename)
+                else:
+                    print("headers are correct, not sure the issue")
+                #end check   
+
+            #add newly created dataframe to frames list
+            frames.append(df) #will this work if the name is the same each time?  If not, just create a list with names
+            # dynamically populated and then put the df data into each
+        else: #file is a duplicate
+            print("file already exists in " +old_pos_file_path+": "+filename+"  ...removing")
+            os.remove(file)
+
+    #concate all df's in frames
+    master_df = pd.concat(frames, ignore_index=True)
+    df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    print ("Added all files to master data frame for processing")
+    frames = [] #re-initialize frames so we can concat below df's
+    frames_non_error = []
+
+    for v in data.values():
+        #can reuse this code elsewhere if : def build_df(v)
+        #build_df(v)
+        EMAIL = v["email"]
+        REGION = v["SL5"]
+        ACCOUNTS = v["accounts"]
+        FALSE = v["false_positives"]
+        results = df[(df['End Customer Source Customer Name'].isin(ACCOUNTS) | df['Ship-To Source Customer Name'].isin(ACCOUNTS) | df['Sold-To Source Customer Name'].isin(ACCOUNTS)) & ~df["Salesrep Email"].str.contains(EMAIL) & ~df['End Customer Source Customer Name'].isin(FALSE)] 
+        #results.index.names = ['POS ID']
+        results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
+        results.loc[:,'Sort Here'] = EMAIL
+        #results["Sort Here"] = EMAIL
+        results.loc[:,'Region Sort'] = REGION
+        #results["Region Sort"] = REGION
+        results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
+        results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
+
+
+        non_error_results = df[df["Salesrep Email"].str.contains(EMAIL) ]#& len(df.index)<20
+        #non_error_results.index.names = ['POS ID']
+        non_error_results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID', 'POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)                    
+        #non_error_results["Sort Here"] = EMAIL
+        non_error_results.loc[:,'Sort Here'] = EMAIL
+        #non_error_results["Region Sort"] = REGION
+        non_error_results.loc[:,'Region Sort'] = REGION
+        non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
+        non_error_results['Date'] = pd.to_datetime(non_error_results['Date'], errors='coerce')
+
+        frames.append(results) #add each results df to list for cancat
+        frames_non_error.append(non_error_results)
+
+    #add the respective dfs together using concat
+    master_results = pd.concat(frames, ignore_index=True)
+    master_non_error_results = pd.concat(frames_non_error, ignore_index=True)
+
+    #change the index before writing to CSV
+    master_results.set_index("POS ID")
+    master_non_error_results.set_index("POS ID")
+
+    #write respective dfs to CSV
+    if os.path.isfile(ALLCSV):
+        with open(ALLCSV, 'a') as f:
+            master_results.to_csv(f, header=False)
+    else:
+        master_results.to_csv(ALLCSV)
+
+    if os.path.isfile(NONERRORCSV):
+        with open(NONERRORCSV, 'a') as f:
+            master_non_error_results.to_csv(f, header=False)
+    else:
+        master_non_error_results.to_csv(NONERRORCSV)  
+
+    #signal that function has ended and give processing time
+    end = time.time()
+    currentlyProcessingReports = "0"
+    print ("Time to process: "+ str(end - start))
+          
+
+
+
 
 def to_csv_from_json_v1(FILES,ALLCSV, NONERRORCSV):
     global currentlyProcessingReports
