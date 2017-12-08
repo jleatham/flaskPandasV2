@@ -289,7 +289,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
     df.reset_index()
     print("length of master frame: "+str(len(df.index)))
-    print ("Added all files to master data frame for processing")
+    print("Added all files to master data frame for processing")
     print(df.head())
     print(df.tail())
 
@@ -306,10 +306,10 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & ~df["Salesrep Email"].str.contains(EMAIL) & ~df['End Customer Source Customer Name'].astype(str).isin(FALSE)] 
         #results.index.names = ['POS ID']
         results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
-        results.loc[:,'Sort Here'] = EMAIL
-        #results["Sort Here"] = EMAIL
-        results.loc[:,'Region Sort'] = REGION
-        #results["Region Sort"] = REGION
+        #results.loc[:,'Sort Here'] = EMAIL
+        results["Sort Here"] = EMAIL
+        #results.loc[:,'Region Sort'] = REGION
+        results["Region Sort"] = REGION
         results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
 
@@ -317,10 +317,10 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         non_error_results = df[df["Salesrep Email"].str.contains(EMAIL) ]#& len(df.index)<20
         #non_error_results.index.names = ['POS ID']
         non_error_results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID', 'POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)                    
-        #non_error_results["Sort Here"] = EMAIL
-        non_error_results.loc[:,'Sort Here'] = EMAIL
-        #non_error_results["Region Sort"] = REGION
-        non_error_results.loc[:,'Region Sort'] = REGION
+        non_error_results["Sort Here"] = EMAIL
+        #non_error_results.loc[:,'Sort Here'] = EMAIL
+        non_error_results["Region Sort"] = REGION
+        #non_error_results.loc[:,'Region Sort'] = REGION
         non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
         non_error_results['Date'] = pd.to_datetime(non_error_results['Date'], errors='coerce')
 
