@@ -301,7 +301,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
             json_accounts.append(account)
         json_email.append(v["email"]) 
     print("done with getting json")
-    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | master_df["Salesrep Email"].str.contains(json_email))]
+    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | master_df["Salesrep Email"].astype(str).isin(json_email))]
     print("done with narrowing search results")
 
     frames = [] #re-initialize frames so we can concat below df's
