@@ -289,7 +289,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     master_df = pd.concat(frames, ignore_index=True)
     #df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
     master_df.reset_index()
-    print("length of master frame: "+str(len(df.index)))
+    print("length of master frame: "+str(len(master_df.index)))
     print("Added all files to master data frame for processing")
     #print(df.head())
     #print(df.tail())
@@ -299,8 +299,8 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     json_email = []
     for v in data.values():
         for account in v["accounts"]:
-            json_accounts.append(account)
-        json_email.append(v["email"]) 
+            json_accounts.append(str(account) #problem with some accounts not being strings, but which?  and how?
+        json_email.append(str(v["email"]) 
     print("done with getting json")
     df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | master_df["Salesrep Email"].astype(str).isin(json_email))]
     print("done with narrowing search results")
