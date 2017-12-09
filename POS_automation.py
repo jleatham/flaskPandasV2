@@ -304,6 +304,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     print("done with getting json")
     df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts)) | (master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts)) | (master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts)) | (master_df["Salesrep Email"].astype(str).isin(json_email)) | (master_df["Salesrep #"].astype(str).isin(json_email)) ]
     print("done with narrowing search results")
+    print("filtered df length: "+str(len(df.index)))
 
     frames = [] #re-initialize frames so we can concat below df's
     frames_non_error = []
@@ -342,7 +343,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
 
 
-        non_error_results = df[(df["Salesrep Email"].str.contains(EMAIL)) | (df["Salesrep #"].astype(int) == repNumber) ]#& len(df.index)<20
+        non_error_results = df[(df["Salesrep Email"].str.contains(EMAIL)) | (df["Salesrep #"].astype(str).str.contains(repNumber)) ]#& len(df.index)<20
         #non_error_results.index.names = ['POS ID']
         non_error_results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID', 'POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)                    
         non_error_results["Sort Here"] = EMAIL
