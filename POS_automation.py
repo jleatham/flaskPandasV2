@@ -323,7 +323,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         for account in v["accounts"]:
             ACCOUNTS.append(str(account))
         FALSE = v["false_positives"]
-        results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & ~(df["Salesrep Email"].str.contains(EMAIL) | df["Salesrep #"].astype(int) == repNumber ) & (~df['End Customer Source Customer Name'].astype(str).isin(FALSE))] 
+        results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & (~df["Salesrep Email"].str.contains(EMAIL)) & (~df["Salesrep #"].astype(int) == repNumber ) & (~df['End Customer Source Customer Name'].astype(str).isin(FALSE))] 
         #results.index.names = ['POS ID']
         results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
         #results.loc[:,'Sort Here'] = EMAIL
@@ -334,7 +334,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
 
 
-        non_error_results = df[(df["Salesrep Email"].str.contains(EMAIL) | df["Salesrep #"].astype(int) == repNumber) ]#& len(df.index)<20
+        non_error_results = df[(df["Salesrep Email"].str.contains(EMAIL)) | (df["Salesrep #"].astype(int) == repNumber) ]#& len(df.index)<20
         #non_error_results.index.names = ['POS ID']
         non_error_results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID', 'POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)                    
         non_error_results["Sort Here"] = EMAIL
