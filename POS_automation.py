@@ -300,7 +300,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     for v in data.values():
         for account in v["accounts"]:
             json_accounts.append(str(account) #problem with some accounts not being strings, but which?  and how?
-        json_email.append(str(v["email"]) 
+        json_email.append(str(v["email"])) 
     print("done with getting json")
     df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | master_df["Salesrep Email"].astype(str).isin(json_email))]
     print("done with narrowing search results")
