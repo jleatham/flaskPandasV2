@@ -719,8 +719,46 @@ def send_link_to_spark(ROOMID):
 def create_monthly_csv(FILE):
     df = pd.read_csv(FILE).set_index("POS ID")
     df['Date']= pd.to_datetime(df['Date'])
-    months = []
+    
 
+
+    #3rd attempt
+    #Find the first date month/year, find the last date month/year.  start with the current month-1
+    #create the dataframe that fit into each month/year, and write the file
+
+    #really shouldn't be wr-writing these files each time but might need to since my update functions don't
+    #pass the new data into this function.  We just grab it from the master and re-write everything each time.
+    #in order to iterate through the months, we use divmod.
+
+    min = df['Date'].min()
+    max = df['Date'].max()
+
+    #using months and years, 12 months in a year so month is smallest single unit(aka multiply by 1)
+    # so start year x 12, + start month x 1, added together will give you a number, same for max
+    #using divmod, when we divide each number in between the range by 12, we will get the year by how many
+    #times it is divisable, aka, the quotient.  The remainder, will be a range between 0 and 11 (if it is 12,
+    #then it would be divisiable again).  So if we add 1 to the remainder, it will give the month.
+    #got this algorithm from stackoverflow
+    ym_start= 12*min.year + min.month - 1 
+    ym_end= 12*max.year + max.month - 1 
+
+    for ym in range( ym_start, ym_end ):
+        y, m = divmod( ym, 12 )
+        df_month = df[(df['Date'].dt.month == m+1) & (df['Date'].dt.year == y)]
+        if not df_month.empty:
+            t = datetime(y, m+1, 1)
+            monthly_csv_filename = filtered_filepath+t.strftime("%Y-%B-monthly-data.csv")
+            with open(monthly_csv_filename, 'w') as f:
+                df_month.to_csv(f)            
+            print("Created file: "+t.strftime("%Y-%B-monthly-data.csv"))    
+
+
+
+    '''
+    #2nd attempt at this
+    #problem with this is that it is only catching the month, and then assuming the year, so if I rerun the reports
+    #on january, all the older month files,e.g., december, will get re-written with the new year, not the previous correct year
+    months = []
     for month in df['Date'].dt.month:
         months.append(month)
     months = set(months)
@@ -738,6 +776,9 @@ def create_monthly_csv(FILE):
         #else:
             #print(month)
     '''
+
+    '''
+    #first attempt at this
     i = 1
     #change this?  Not sure if it works come January, or at least won't update previous months
     while (i < now.month):
