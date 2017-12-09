@@ -302,7 +302,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
             json_accounts.append(str(account)) #problem with some accounts not being strings, but which?  and how?
         json_email.append(str(v["email"])) 
     print("done with getting json")
-    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts) | master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts) | master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts) | master_df["Salesrep Email"].astype(str).isin(json_email) | master_df["Salesrep #"].astype(str).isin(json_email) )]
+    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(json_accounts)) | (master_df['Ship-To Source Customer Name'].astype(str).isin(json_accounts)) | (master_df['Sold-To Source Customer Name'].astype(str).isin(json_accounts)) | (master_df["Salesrep Email"].astype(str).isin(json_email)) | (master_df["Salesrep #"].astype(str).isin(json_email)) ]
     print("done with narrowing search results")
 
     frames = [] #re-initialize frames so we can concat below df's
@@ -312,18 +312,26 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     for v in data.values():
         #can reuse this code elsewhere if : def build_df(v)
         #build_df(v)
+
+        #can probably speed things up if I remove items from the df as I find them, maybe speed up, not sure.
         EMAIL = str(v["email"])
         if EMAIL.isnumeric():
-            repNumber = int(float(EMAIL))
-            print(str(repNumber))
+            #repNumber = int(float(EMAIL))
+            repNumber = EMAIL
+            #print(str(repNumber))
         else:
-            repNumber = 10555 #some random number
+            repNumber = '10555' #some random number
         REGION = str(v["SL5"])
-        ACCOUNTS = []
+        ACCOUNTS = [] #probably not needed but I added it when there were a few errors in the database
         for account in v["accounts"]:
             ACCOUNTS.append(str(account))
         FALSE = v["false_positives"]
-        results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & (~df["Salesrep Email"].str.contains(EMAIL)) & (~df["Salesrep #"].astype(int) == repNumber ) & (~df['End Customer Source Customer Name'].astype(str).isin(FALSE))] 
+        
+        results1 = df[ (df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS)) | (df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS)) | (df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) ]
+        results = results1[ (~results1["Salesrep Email"].str.contains(EMAIL)) & (~results1["Salesrep #"].astype(str).str.contains(repNumber)) ]
+        #add false positives later on results3 = results2[~results2['End Customer Source Customer Name'].astype(str).isin(FALSE)]]
+        # old search:   results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & (~df["Salesrep Email"].str.contains(EMAIL)) & (~df["Salesrep #"].astype(int) == repNumber ) & (~df['End Customer Source Customer Name'].astype(str).isin(FALSE))] 
+        # the old search above was difficult to get the logic right, so I broke it up
         #results.index.names = ['POS ID']
         results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
         #results.loc[:,'Sort Here'] = EMAIL
@@ -792,6 +800,7 @@ def create_html_tables():
 
 
 def get_time_frame(FILE):
+    #should try/catch this incase something happens to the current_data file, it will throw an error
     df = pd.read_csv(FILE, usecols=['Date'])
     df['Date']= pd.to_datetime(df['Date'])
     least_recent_date = df['Date'].min()
