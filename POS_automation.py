@@ -314,7 +314,7 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         #build_df(v)
         EMAIL = str(v["email"])
         if EMAIL.isnumeric():
-            repNumber = int(float(EMAIL))
+            repNumber = int(EMAIL)
         else:
             repNumber = 10555 #some random number
         REGION = str(v["SL5"])
