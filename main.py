@@ -107,7 +107,7 @@ def test4():
 #I use this so I can build the links dynamic from files in filteredPOS and still serve them from flask
 @app.route('/SWSO/<path:path>')
 def SWSO(path):
-    return send_from_directory('/home/cisco/houston-pos/filteredPOS/',path)
+    return send_from_directory(home_file_path+'/filteredPOS/',path)
 
 
 #main tool for AMs to update their account list
@@ -190,7 +190,7 @@ def posadmin():
         elif request.form['function'] == 'adminRunAll':
             #print("made it to runReport")
             if request.form['secret'] == POS_ADMIN_TOKEN: #super secret password!         
-                os.system('/usr/bin/python3 /home/cisco/houston-pos/POS_filter.py test')
+                os.system('/usr/bin/python3 '+home_file_path+'POS_filter.py test')
                 status = "Report is done"
                 return jsonify({"status":status})
             else:
