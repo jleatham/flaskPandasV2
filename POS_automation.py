@@ -312,9 +312,11 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     for v in data.values():
         #can reuse this code elsewhere if : def build_df(v)
         #build_df(v)
-        EMAIL = v["email"]
-        REGION = v["SL5"]
-        ACCOUNTS = v["accounts"]
+        EMAIL = str(v["email"])
+        REGION = str(v["SL5"])
+        ACCOUNTS = []
+        for account in v["accounts"]:
+            ACCOUNTS.append(str(account))
         FALSE = v["false_positives"]
         results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & ~df["Salesrep Email"].str.contains(EMAIL) & ~df['End Customer Source Customer Name'].astype(str).isin(FALSE)] 
         #results.index.names = ['POS ID']
