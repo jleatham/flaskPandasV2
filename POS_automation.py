@@ -813,23 +813,23 @@ def create_area_reports(ALLCSV,NONERRORCSV):
 
     print("Filename: "+home_file_path+"SWSO_"+all_data)
     with open(filtered_filepath+"SWSO_"+all_data, 'w') as f:
-        df_month.to_csv(f) 
+        SWSO_df.to_csv(f) 
     print("Filename: "+home_file_path+"STO_"+all_data)
     with open(filtered_filepath+"STO_"+all_data, 'w') as f:
-        df_month.to_csv(f) 
+        STO_df.to_csv(f) 
     print("Filename: "+home_file_path+"SESO_"+all_data)
     with open(filtered_filepath+"SESO_"+all_data, 'w') as f:
-        df_month.to_csv(f) 
+        SESO_df.to_csv(f) 
 
     print("Filename: "+home_file_path+"SWSO_"+non_error_pos_data)
     with open(filtered_filepath+"SWSO_"+non_error_pos_data, 'w') as f:
-        df_month.to_csv(f) 
+        ne_SWSO_df.to_csv(f) 
     print("Filename: "+home_file_path+"STO_"+non_error_pos_data)
     with open(filtered_filepath+"STO_"+non_error_pos_data, 'w') as f:
-        df_month.to_csv(f) 
+        ne_STO_df.to_csv(f) 
     print("Filename: "+home_file_path+"SESO_"+non_error_pos_data)
     with open(filtered_filepath+"SESO_"+non_error_pos_data, 'w') as f:
-        df_month.to_csv(f) 
+        ne_SESO_df.to_csv(f) 
 
 #def move_last_year_files_to_dif_folder()
     #To do
