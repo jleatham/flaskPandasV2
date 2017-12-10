@@ -109,8 +109,8 @@ all_html_data = "all_filtered_POS_data.html"
 all_data_html_filename = home_file_path + all_html_data
 
 
-monthly_data="monthly_filtered_POS_data_"+timestr+".csv"
-monthly_data_filename = home_file_path+"filteredPOS/"+monthly_data
+#monthly_data="monthly_filtered_POS_data_"+timestr+".csv"
+#monthly_data_filename = home_file_path+"filteredPOS/"+monthly_data
 
 temp_monthly_data="monthly_filtered_POS_data_temp.csv"
 temp_monthly_data_filename = home_file_path+"filteredPOS/"+temp_monthly_data
@@ -800,6 +800,55 @@ def create_monthly_csv(FILE):
 
 
 def create_area_reports(ALLCSV,NONERRORCSV):
+    #move this to global
+    area_list = [['CSA','SWSO','South West Select Operation'],
+                ['CSA','SESO','South East Select Operation'],
+                ['CSA','STO','South Territory Operation']]
+
+    df = pd.read_csv(ALLCSV)
+
+    ne_df = pd.read_csv(NONERRORCSV)
+
+
+    for operation in area_list:
+        op_df = df[df["Operation"].str.contains(operation[2])] #name of op
+        ne_op_df = ne_df[ne_df["Operation"].str.contains(operation[2])]
+
+        #create monthly reports per operation
+        #explanation for this is in old monthly report function
+        op_df['Date']= pd.to_datetime(op_df['Date']) #to parse the time column
+        min = op_df['Date'].min()
+        max = op_df['Date'].max()
+        ym_start= 12*min.year + min.month - 1 
+        ym_end= 12*max.year + max.month - 1 
+
+        for ym in range( ym_start, ym_end ):
+            y, m = divmod( ym, 12 )
+            df_month = op_df[(op_df['Date'].dt.month == m+1) & (op_df['Date'].dt.year == y)]
+            if not df_month.empty:
+                df_month.set_index('POS ID')
+                t = datetime(y, m+1, 1)
+                monthly_csv_filename = filtered_filepath+operation[1]+"_"+t.strftime("%Y-%B-monthly-data.csv")
+                with open(monthly_csv_filename, 'w') as f:
+                    df_month.to_csv(f)            
+                print("Created file: "+operation[1]+"_"+t.strftime("%Y-%B-monthly-data.csv"))  
+
+
+
+        op_df.set_index('POS ID')
+        ne_op_df.set_index('POS ID')
+
+
+
+
+        print("Filename: "+home_file_path+operation[1]+"_"+all_data)
+        with open(filtered_filepath+operation[1]+"_"+all_data, 'w') as f:
+            op_df.to_csv(f)
+        with open(filtered_filepath+operation[1]+"_"+non_error_pos_data, 'w') as f:
+            ne_op_df.to_csv(f)
+
+
+    '''
     df = pd.read_csv(ALLCSV).set_index("POS ID")
     ne_df = pd.read_csv(NONERRORCSV).set_index("POS ID")
     #print(df.head())
@@ -830,6 +879,7 @@ def create_area_reports(ALLCSV,NONERRORCSV):
     print("Filename: "+home_file_path+"SESO_"+non_error_pos_data)
     with open(filtered_filepath+"SESO_"+non_error_pos_data, 'w') as f:
         ne_SESO_df.to_csv(f) 
+    '''
 
 #def move_last_year_files_to_dif_folder()
     #To do

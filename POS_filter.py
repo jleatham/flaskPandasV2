@@ -46,7 +46,7 @@ if file_index:
     print ("all files processed")
     #to_html_v1(all_data_csv_filename,all_data_html_filename)
     create_area_reports(all_data_csv_filename,non_error_pos_data_filename)
-    create_monthly_csv(all_data_csv_filename)
+    #create_monthly_csv(all_data_csv_filename) #moved to area_report function
     create_html_tables()
 
 else:
