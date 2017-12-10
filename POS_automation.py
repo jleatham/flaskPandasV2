@@ -125,7 +125,7 @@ roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vNjhiNzc1MTAtNjAxNi0xMWU3LWFlN2MtNGJlNjIzOT
 #roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vOWZjODRmMjAtN2QyYi0xMWU3LThmZjQtMWJhODMwMmUyODg3" #Houston POS room
 
 
-
+#not used
 def to_html_v1(ALLCSV, ALLHTML):
     results = pd.read_csv(ALLCSV)
         
@@ -323,6 +323,8 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         else:
             repNumber = '10555' #some random number
         REGION = str(v["SL5"])
+        OPERATION = str(v["SL4"])
+        AREA = str(v["SL3"])
         ACCOUNTS = [] #probably not needed but I added it when there were a few errors in the database
         for account in v["accounts"]:
             ACCOUNTS.append(str(account))
@@ -338,8 +340,10 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         #results.loc[:,'Sort Here'] = EMAIL
         results["Sort Here"] = EMAIL
         #results.loc[:,'Region Sort'] = REGION
-        results["Region Sort"] = REGION
-        results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
+        results["Region"] = REGION
+        results["Operation"] = OPERATION
+        results["Area"] = AREA
+        results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area']]
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
 
 
@@ -348,9 +352,11 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         non_error_results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID', 'POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)                    
         non_error_results["Sort Here"] = EMAIL
         #non_error_results.loc[:,'Sort Here'] = EMAIL
-        non_error_results["Region Sort"] = REGION
+        non_error_results["Region"] = REGION
+        non_error_results["Operation"] = OPERATION
+        non_error_results["Area"] = AREA
         #non_error_results.loc[:,'Region Sort'] = REGION
-        non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region Sort']]
+        non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area']]
         non_error_results['Date'] = pd.to_datetime(non_error_results['Date'], errors='coerce')
 
         frames.append(results) #add each results df to list for cancat
@@ -791,6 +797,11 @@ def create_monthly_csv(FILE):
                 df_month.to_csv(f)
         i = i+1
     '''
+
+
+
+
+
 
 #def move_last_year_files_to_dif_folder()
     #To do
