@@ -371,23 +371,23 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     master_non_error_results.reset_index()
 
     #change the index before writing to CSV
-    master_results.set_index("POS ID")
-    master_non_error_results.set_index("POS ID")
+    #master_results.set_index("POS ID")
+    #master_non_error_results.set_index("POS ID")
     print("size of results = "+str(len(master_results.index)))
     print("size of non error results = "+str(len(master_non_error_results.index)))
 
     #write respective dfs to CSV
     if os.path.isfile(ALLCSV):
         with open(ALLCSV, 'a') as f:
-            master_results.to_csv(f, header=False)
+            master_results.to_csv(f, header=False, index=False)
     else:
-        master_results.to_csv(ALLCSV)
+        master_results.to_csv(ALLCSV, index=False)
 
     if os.path.isfile(NONERRORCSV):
         with open(NONERRORCSV, 'a') as f:
-            master_non_error_results.to_csv(f, header=False)
+            master_non_error_results.to_csv(f, header=False, index=False)
     else:
-        master_non_error_results.to_csv(NONERRORCSV)  
+        master_non_error_results.to_csv(NONERRORCSV, index=False)  
 
     #signal that function has ended and give processing time
     end = time.time()
@@ -807,9 +807,9 @@ def create_area_reports(ALLCSV,NONERRORCSV):
                 ['CSA','SESO','South East Select Operation'],
                 ['CSA','STO','South Territory Operation']]
 
-    df = pd.read_csv(ALLCSV)
+    df = pd.read_csv(ALLCSV).set_index("POS ID")
 
-    ne_df = pd.read_csv(NONERRORCSV)
+    ne_df = pd.read_csv(NONERRORCSV).set_index("POS ID")
 
 
     for operation in area_list:
@@ -828,7 +828,7 @@ def create_area_reports(ALLCSV,NONERRORCSV):
             y, m = divmod( ym, 12 )
             df_month = op_df[(op_df['Date'].dt.month == m+1) & (op_df['Date'].dt.year == y)]
             if not df_month.empty:
-                df_month.set_index('POS ID')
+                #df_month.set_index('POS ID')
                 t = datetime(y, m+1, 1)
                 monthly_csv_filename = filtered_filepath+operation[1]+"_"+t.strftime("%Y-%B-monthly-data.csv")
                 with open(monthly_csv_filename, 'w') as f:
@@ -837,8 +837,8 @@ def create_area_reports(ALLCSV,NONERRORCSV):
 
 
 
-        op_df.set_index('POS ID')
-        ne_op_df.set_index('POS ID')
+        #op_df.set_index('POS ID')
+        #ne_op_df.set_index('POS ID')
 
 
 
