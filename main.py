@@ -41,6 +41,109 @@ def index():
     description = "Not that kind of POS"
     pageType = 'test'    
     return render_template("index.html", title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files)
+
+
+@app.route('/CSA/SWSO')
+def SWSO():
+    global report_runtime, recent_date, least_recent_date #used to check date of last POS report
+    html_files = []
+    agg_html_files = []
+    #make sure the update doesn't get ran everytime the page is loaded
+    curr_time = int(time.time())
+    if curr_time - report_runtime > 500:
+        report_runtime = curr_time
+        recent_date,least_recent_date = get_time_frame(all_data_csv_filename)
+        #print("report date was updated")
+    
+    for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
+        filename = os.path.basename(file)
+        if "SWSO_aggressive" in filename:
+            agg_html_files.append(filename)     
+        elif "SWSO" in filename:
+            html_files.append(filename)
+    
+    #html_files is sent to web page, and jinja2 takes the list and put them in a list of URLs
+    try: #my curl test throws error when the main report is running
+        agg_html_files = sorted(agg_html_files)
+        html_files = sorted(html_files) #sort list alphabetically
+        #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+        html_files.pop(html_files.index("SWSO_current_data.html")) #remove from list as I put it as a button on page
+        html_files.append(html_files.pop(html_files.index("SWSO_non_error_pos_data.html"))) #move to end of list
+    except:
+        print("cannot process files as report is being ran")
+
+    title = "SWSO Reports"
+    description = "Find mis-booked POS items for SWSO"
+    pageType = 'test'    
+    return render_template("swso.html", title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files)
+     
+@app.route('/CSA/SESO')
+def SESO():
+    global report_runtime, recent_date, least_recent_date #used to check date of last POS report
+    html_files = []
+    agg_html_files = []
+    #make sure the update doesn't get ran everytime the page is loaded
+    curr_time = int(time.time())
+    if curr_time - report_runtime > 500:
+        report_runtime = curr_time
+        recent_date,least_recent_date = get_time_frame(all_data_csv_filename)
+        #print("report date was updated")
+    
+    for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
+        filename = os.path.basename(file)
+        if "SESO_aggressive" in filename:
+            agg_html_files.append(filename)     
+        elif "SESO" in filename:
+            html_files.append(filename)
+    
+    #html_files is sent to web page, and jinja2 takes the list and put them in a list of URLs
+    try: #my curl test throws error when the main report is running
+        agg_html_files = sorted(agg_html_files)
+        html_files = sorted(html_files) #sort list alphabetically
+        #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+        html_files.pop(html_files.index("SESO_current_data.html")) #remove from list as I put it as a button on page
+        html_files.append(html_files.pop(html_files.index("SESO_non_error_pos_data.html"))) #move to end of list
+    except:
+        print("cannot process files as report is being ran")
+
+    title = "SESO Reports"
+    description = "Find mis-booked POS items for SESO"
+    pageType = 'test'    
+    return render_template("seso.html", title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files)
+    
+@app.route('/CSA/STO')
+def STO():
+    global report_runtime, recent_date, least_recent_date #used to check date of last POS report
+    html_files = []
+    agg_html_files = []
+    #make sure the update doesn't get ran everytime the page is loaded
+    curr_time = int(time.time())
+    if curr_time - report_runtime > 500:
+        report_runtime = curr_time
+        recent_date,least_recent_date = get_time_frame(all_data_csv_filename)
+        #print("report date was updated")
+    
+    for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
+        filename = os.path.basename(file)
+        if "STO_aggressive" in filename:
+            agg_html_files.append(filename)     
+        elif "STO" in filename:
+            html_files.append(filename)
+    
+    #html_files is sent to web page, and jinja2 takes the list and put them in a list of URLs
+    try: #my curl test throws error when the main report is running
+        agg_html_files = sorted(agg_html_files)
+        html_files = sorted(html_files) #sort list alphabetically
+        #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+        html_files.pop(html_files.index("STO_current_data.html")) #remove from list as I put it as a button on page
+        html_files.append(html_files.pop(html_files.index("STO_non_error_pos_data.html"))) #move to end of list
+    except:
+        print("cannot process files as report is being ran")
+
+    title = "STO Reports"
+    description = "Find mis-booked POS items for STO"
+    pageType = 'test'    
+    return render_template("sto.html", title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files)
     
 
 #currently not using this, used to send MBR data on click, replaced it with email capabilities via jquery
@@ -105,8 +208,8 @@ def test4():
 
 #if you click a link with the path of /SWSO/whatever it will just return any file of same name
 #I use this so I can build the links dynamic from files in filteredPOS and still serve them from flask
-@app.route('/SWSO/<path:path>')
-def SWSO(path):
+@app.route('/files/<path:path>')
+def files(path):
     return send_from_directory(home_file_path+'/filteredPOS/',path)
 
 

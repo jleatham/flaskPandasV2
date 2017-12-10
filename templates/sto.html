@@ -61,7 +61,7 @@
           <div class="callout">
             <p>{{ description }} </p>
             <span>Updated: </span><h3><strong>{{ recent }}</strong></h3>
-            <a href="/files/current_data.html"  target="_blank" class="success button">Generate Report</a><br/>
+            <a href="/files/STO_current_data.html"  target="_blank" class="success button">Generate Report</a><br/>
             
             
           </div>
@@ -70,12 +70,12 @@
 
       <div class="grid-x grid-padding-x">
         <div class="large-8 medium-8 cell">
-          <h5>Additional Files for CSA</h5>
+          <h5>Additional Files for STO</h5>
           <!-- Grid Example -->
 
             <div class="large-8 medium-8 cell">
               <div class="primary callout">
-                <p>Current_data above is the main report for all AMs in CSA</p>
+                <p>Current_data above is the main report for all AMs in STO</p>
                 <p>Monthly reports includes same data as Current_data, seperated by month</p>
                 <p>For each report, click the POS ID to generate email for OneCommercial</p>
 
@@ -94,12 +94,6 @@
 
 
       </div>
-      <div class="large-8 medium-8 cell">
-        <video width="100%" height="100%"controls="true" poster={{ url_for('static', filename='media/vidpic.png') }}>
-          <source src={{ url_for('static', filename='media/POS-tut2.mp4') }} type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-    </div>
     </div>
 
     <script src={{ url_for('static', filename='vendor/jquery.js') }}></script>

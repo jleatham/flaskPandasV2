@@ -799,9 +799,37 @@ def create_monthly_csv(FILE):
     '''
 
 
+def create_area_reports(ALLCSV,NONERRORCSV):
+    df = pd.read_csv(ALLCSV).set_index("POS ID")
+    ne_df = pd.read_csv(NONERRORCSV).set_index("POS ID")
+    #print(df.head())
+    SWSO_df = df[df["Operation"].str.contains("South West Select Operation")]
+    STO_df = df[df["Operation"].str.contains("South Territory Operation")]
+    SESO_df = df[df["Operation"].str.contains("South East Select Operation")]
 
+    ne_SWSO_df = ne_df[ne_df["Operation"].str.contains("South West Select Operation")]
+    ne_STO_df = ne_df[ne_df["Operation"].str.contains("South Territory Operation")]
+    ne_SESO_df = ne_df[ne_df["Operation"].str.contains("South East Select Operation")]
 
+    print("Filename: "+home_file_path+"SWSO_"+all_data)
+    with open(filtered_filepath+"SWSO_"+all_data, 'w') as f:
+        df_month.to_csv(f) 
+    print("Filename: "+home_file_path+"STO_"+all_data)
+    with open(filtered_filepath+"STO_"+all_data, 'w') as f:
+        df_month.to_csv(f) 
+    print("Filename: "+home_file_path+"SESO_"+all_data)
+    with open(filtered_filepath+"SESO_"+all_data, 'w') as f:
+        df_month.to_csv(f) 
 
+    print("Filename: "+home_file_path+"SWSO_"+non_error_pos_data)
+    with open(filtered_filepath+"SWSO_"+non_error_pos_data, 'w') as f:
+        df_month.to_csv(f) 
+    print("Filename: "+home_file_path+"STO_"+non_error_pos_data)
+    with open(filtered_filepath+"STO_"+non_error_pos_data, 'w') as f:
+        df_month.to_csv(f) 
+    print("Filename: "+home_file_path+"SESO_"+non_error_pos_data)
+    with open(filtered_filepath+"SESO_"+non_error_pos_data, 'w') as f:
+        df_month.to_csv(f) 
 
 #def move_last_year_files_to_dif_folder()
     #To do
