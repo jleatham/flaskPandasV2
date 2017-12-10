@@ -10,6 +10,8 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    #need to change this to /CSA
+    #need to change CSA reports to include CSA_ tag and only display those... so that I can add more areas later
     global report_runtime, recent_date, least_recent_date #used to check date of last POS report
     html_files = []
     agg_html_files = []

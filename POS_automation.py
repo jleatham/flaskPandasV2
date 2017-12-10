@@ -366,7 +366,9 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
     print("finished all searches, adding to CSV")
     #add the respective dfs together using concat
     master_results = pd.concat(frames, ignore_index=True)
+    master_results.reset_index()
     master_non_error_results = pd.concat(frames_non_error, ignore_index=True)
+    master_non_error_results.reset_index()
 
     #change the index before writing to CSV
     master_results.set_index("POS ID")
