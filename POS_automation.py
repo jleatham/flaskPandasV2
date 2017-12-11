@@ -757,6 +757,8 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     #take above and change to final_pos_list.append([s1,s2])
     #iterate though master_df and search for s1 in customer list, add s2 as a column, save as a [df1,df2,df3,etc]
     #then concat all the dfs together like we do on v2 function,=.  That way we can see what we matched against.
+    frames = []
+    print("adding CSVs to master df")
     for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'):
         try:
             with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
@@ -780,13 +782,14 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     print("Added all files to master data frame for processing")
 
     #filter out the data to process faster
+    print("filtering out unnecessary data")
     temp_account_filter = []
     for account in final_pos_list:
         temp_account_filter.append(str(account[0]))
     df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(temp_account_filter)) | (master_df['Ship-To Source Customer Name'].astype(str).isin(temp_account_filter)) | (master_df['Sold-To Source Customer Name'].astype(str).isin(temp_account_filter)) ]
 
     frames = [] #re-initialize frames so we can concat below df's
-
+    print("building aggressive df")
     for account in final_pos_list:
         results = df[(df['End Customer Source Customer Name'].astype(str).str.contains(account[0])) | (df['Ship-To Source Customer Name'].astype(str).str.contains(account[0])) | (df['Sold-To Source Customer Name'].astype(str).str.contains(account[0])) ]
         #results.index.names = ['POS ID']
