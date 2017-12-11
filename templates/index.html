@@ -34,7 +34,7 @@
           <div class="callout">
             <p>{{ description }} </p>
             <span>Updated: </span><h3><strong>{{ recent }}</strong></h3>
-            <a href="/files/current_data.html"  target="_blank" class="success button">Generate Report</a><br/>
+            <p>Find your Operation's report above</p>
             
             
           </div>
@@ -42,31 +42,6 @@
       </div>
 
       <div class="grid-x grid-padding-x">
-        <div class="large-8 medium-8 cell">
-          <h5>Additional Files for CSA</h5>
-          <!-- Grid Example -->
-
-            <div class="large-8 medium-8 cell">
-              <div class="primary callout">
-                <p>Current_data above is the main report for all AMs in CSA</p>
-                <p>Monthly reports includes same data as Current_data, seperated by month</p>
-                <p>For each report, click the POS ID to generate email for OneCommercial</p>
-
-                {%- for item in files %}
-                <ul><a href="/files/{{ item }}" target="_blank">{{ item }}</a></ul>
-                {%- endfor %}
-
-                <p>Aggressive Search Files</p>
-                <p>Aggressive Search Reports are an optional report that will include potentially misspelled account names</p>
-                {%- for item in aggfiles %}
-                <ul><a href="/files/{{ item }}" target="_blank">{{ item }}</a></ul>
-                {%- endfor %}
-                
-              </div>
-            </div>
-
-
-      </div>
       <div class="large-8 medium-8 cell">
         <video width="100%" height="100%"controls="true" poster={{ url_for('static', filename='media/vidpic.png') }}>
           <source src={{ url_for('static', filename='media/POS-tut2.mp4') }} type="video/mp4">
