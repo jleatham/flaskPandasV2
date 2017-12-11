@@ -714,7 +714,7 @@ def update_single_am_results(EMAIL,ALLCSV):
 
 
 
-'''
+    '''
 
     for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'):
         filename = os.path.basename(file)
@@ -748,7 +748,7 @@ def update_single_am_results(EMAIL,ALLCSV):
             print (e)
             #print (sys.exc_info()[0])
             pass
-'''    
+    '''    
     #create_monthly_csv(ALLCSV)
     create_area_reports(all_data_csv_filename,non_error_pos_data_filename,op_list) #should either bring these vriables from function
     # or change the area_report function to not have them passed in, just assigned as global
