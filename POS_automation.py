@@ -34,7 +34,7 @@ import glob
 import shutil
 import sys
 import time
-from datetime import datetime
+from datetime import datetime,timedelta
 import jellyfish
 import editdistance
 import itertools
@@ -614,20 +614,107 @@ def update_single_am_results(EMAIL,ALLCSV):
     for v in data.values():
         if v["email"] == EMAIL:
             emailExists = True
+            if EMAIL.isnumeric():
+                #repNumber = int(float(EMAIL))
+                repNumber = EMAIL
+                #print(str(repNumber))
+            else:
+                repNumber = '10555' #some random number
+            REGION = str(v["SL5"])
+            OPERATION = str(v["SL4"])
+            AREA = str(v["SL3"])
+            SL2 = str(v["SL2"])
+            SL1 = str(v["SL1"])
+            ACCOUNTS = [] #probably not needed but I added it when there were a few errors in the database
+            for account in v["accounts"]:
+                ACCOUNTS.append(str(account))
+            FALSE = v["false_positives"]
 
     if not emailExists:
         currentlyProcessingReports = "0"
         return "Could not find this CCO ID"
     
 
-    df = pd.read_csv(ALLCSV).set_index("POS ID")
+    df = pd.read_csv(ALLCSV)
     results = df[df['Sort Here'] != EMAIL]
 
     with open(ALLCSV, 'w') as f: #all_data_csv_filename
-        results.to_csv(f)
+        results.to_csv(f,index=False)
 
 
 
+
+
+
+
+    frames = []
+    print("adding CSVs to master df")
+
+    
+    #test_file_list = [old_pos_file_path+"US_POS_Report 01_08 to 24_08.csv",old_pos_file_path+"US POS Current Detailed Bookings Report_V1.0 _ 117952683_757818984988416547.csv"] #delete when done testing
+    #for file in test_file_list:
+    for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'): #uncomment when done testing
+        try:
+            with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
+                text = f.read()
+            FILEDATA = StringIO(text)
+            df = pd.DataFrame() # create empty dataframe                       
+            df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name","Salesrep #"])
+        except Exception as e:
+            print ("file not readable in pandas: "+ file)
+            print (e)
+
+
+        frames.append(df)
+    #concate all df's in frames
+    for frame in frames:
+        print("length of frame: "+str(len(frame.index)))
+    master_df = pd.concat(frames, ignore_index=True)
+    #df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    master_df.reset_index()
+    print("length of master frame: "+str(len(master_df.index)))
+    print("Added all files to master data frame for processing")
+
+    df = master_df
+    frames = [] #re-initialize frames so we can concat below df's
+    print("building results df")
+
+
+    results1 = df[ (df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS)) | (df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS)) | (df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) ]
+    results = results1[ (~results1["Salesrep Email"].str.contains(EMAIL)) & (~results1["Salesrep #"].astype(str).str.contains(repNumber)) ]
+    #add false positives later on results3 = results2[~results2['End Customer Source Customer Name'].astype(str).isin(FALSE)]]
+    # old search:   results = df[(df['End Customer Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Ship-To Source Customer Name'].astype(str).isin(ACCOUNTS) | df['Sold-To Source Customer Name'].astype(str).isin(ACCOUNTS)) & (~df["Salesrep Email"].str.contains(EMAIL)) & (~df["Salesrep #"].astype(int) == repNumber ) & (~df['End Customer Source Customer Name'].astype(str).isin(FALSE))] 
+    # the old search above was difficult to get the logic right, so I broke it up
+    #results.index.names = ['POS ID']
+    results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
+    #results.loc[:,'Sort Here'] = EMAIL
+    results["Sort Here"] = EMAIL
+    #results.loc[:,'Region Sort'] = REGION
+    results["Region"] = REGION
+    results["Operation"] = OPERATION
+    results["Area"] = AREA
+    results["SL2"] = SL2
+    results["SL1"] = SL1
+    results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area','SL2','SL1']]
+    results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
+
+    if os.path.isfile(ALLCSV):
+        with open(ALLCSV, 'a') as f:
+            results.to_csv(f, header=False, index=False)
+    else:
+        results.to_csv(ALLCSV,index=False)
+
+
+
+
+
+
+
+
+
+
+
+'''
 
     for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'):
         filename = os.path.basename(file)
@@ -661,8 +748,10 @@ def update_single_am_results(EMAIL,ALLCSV):
             print (e)
             #print (sys.exc_info()[0])
             pass
-    
-    create_monthly_csv(ALLCSV)
+'''    
+    #create_monthly_csv(ALLCSV)
+    create_area_reports(all_data_csv_filename,non_error_pos_data_filename,op_list) #should either bring these vriables from function
+    # or change the area_report function to not have them passed in, just assigned as global
     create_html_tables()
 
     end = time.time()
@@ -735,17 +824,12 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
             print (e)
     
     #print("creating account array")
-    i = 0
+
     pos_list = set(pos_list)
     account_array = list(itertools.product(pos_list, account_list))        
     for s1,s2 in account_array:
         s1 = str(s1)
         s2 = str(s2)
-        i += 1
-        if (i > 100):
-            print("100 loops processed in matrix")
-            print(s1,s2)
-            i = 0
         if (len(s2) <= 2):
             pass
         elif (len(s2) <= 4):
@@ -768,9 +852,10 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     frames = []
     print("adding CSVs to master df")
 
-    #for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'): #uncomment when done testing
-    test_file_list = [old_pos_file_path+"US_POS_Report 01_08 to 24_08.csv",old_pos_file_path+"US POS Current Detailed Bookings Report_V1.0 _ 117952683_757818984988416547.csv"] #delete when done testing
-    for file in test_file_list:
+    
+    #test_file_list = [old_pos_file_path+"US_POS_Report 01_08 to 24_08.csv",old_pos_file_path+"US POS Current Detailed Bookings Report_V1.0 _ 117952683_757818984988416547.csv"] #delete when done testing
+    #for file in test_file_list:
+    for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'): #uncomment when done testing
         try:
             with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
                 text = f.read()
@@ -1042,40 +1127,47 @@ def create_area_reports(ALLCSV,NONERRORCSV,OPLIST):
 
 def create_html_tables():
 
+    now = datetime.now()
+    ago = now-timedelta(minutes=10)
     #html = """   <script>$(document).change(function(){$('tr').click(function get_my_data(e){var row = e.currentTarget;var cell = row.getElementsByTagName('td');var POS = cell[0].innerHTML;console.log(POS);window.location = "mailto:eiwalsh@cisco.com?subject=Please%20claim%20POS%20order-"+cell[0].innerHTML+"-"+cell[2].innerHTML+"&body=%0D%0AI%20believe%20this%20order%20should%20be%20credited%20to%20me.%20%20Here%20is%20what%20I%20know:%0D%0A%0D%0APOSID:%09:%09"+cell[0].innerHTML+"%0D%0ADATE:%09:%09"+cell[1].innerHTML+"%0D%0AMy%20CCOID:%09:%09"+cell[2].innerHTML+"%0D%0ACredited:%09:%09"+cell[3].innerHTML+"%0D%0AEnd%20customer:%09:%09"+cell[4].innerHTML+"%0D%0AShipped%20to:%09:%09"+cell[7].innerHTML+"%0D%0ASold%20to:%09:%09"+cell[8].innerHTML+"%0D%0AParty%20ID:%09:%09"+cell[9].innerHTML+"%0D%0AProduct%20ID:%09:%09"+cell[5].innerHTML+"%0D%0AValue:%09%09:%09"+cell[6].innerHTML+"%0D%0A";});});</script> """
     html = """ <script>$(document).on('click', 'td', function(e){var cell = e.currentTarget.innerHTML;var row = e.currentTarget.closest('tr');var cells = row.getElementsByTagName('td');var POS = cells[0].innerHTML;if (cell == POS){window.location = "mailto:onecommercial@cisco.com?subject=Please%20claim%20POS%20order-"+cells[0].innerHTML+"-"+cells[2].innerHTML+"&cc=jleatham@cisco.com&body=%0D%0AI%20believe%20this%20order%20should%20be%20credited%20to%20me.%20%20Details:%0D%0A%0D%0APOSID:%09:%09"+cells[0].innerHTML+"%0D%0ADATE:%09:%09"+cells[1].innerHTML+"%0D%0AMy%20CCOID:%09:%09"+cells[2].innerHTML+"%0D%0ACredited:%09:%09"+cells[3].innerHTML+"%0D%0AEnd%20customer:%09:%09"+cells[4].innerHTML+"%0D%0AShipped%20to:%09:%09"+cells[7].innerHTML+"%0D%0ASold%20to:%09:%09"+cells[8].innerHTML+"%0D%0AParty%20ID:%09:%09"+cells[9].innerHTML+"%0D%0AProduct%20ID:%09:%09"+cells[5].innerHTML+"%0D%0AValue:%09%09:%09"+cells[6].innerHTML+"%0D%0A";}});</script> """
     html2 = """ <script>window.onload = function() {if(!window.location.hash) {window.location = window.location + '#loaded';window.location.reload();}}</script> """
     for file in glob.glob(filtered_filepath + '/*.[Cc][Ss][Vv]'):
-        filename = os.path.basename(file)
-        filename = os.path.splitext(filename)[0]
-        os.system("csvtotable -o -vs=0 "+file+" "+filtered_filepath + filename+".html")
-        with open(filtered_filepath + filename+".html", 'r') as f:
-            webpage = f.read()
+        #only create HTML files that were modified recently
+        st = os.stat(file)
+        mtime = datetime.fromtimestamp(st.st_mtime)
+        if (mtime > ago): #modified less than 10 minutes ago
+            print("{0}     modified     {1}".format(file, mtime))        
+            filename = os.path.basename(file)
+            filename = os.path.splitext(filename)[0]
+            os.system("csvtotable -o -vs=0 "+file+" "+filtered_filepath + filename+".html")
+            with open(filtered_filepath + filename+".html", 'r') as f:
+                webpage = f.read()
 
-        soup = Soup(webpage)
+            soup = Soup(webpage)
 
-        style = soup.find('style')
-        style.insert_before(html)
-        style.insert_before(html2)
+            style = soup.find('style')
+            style.insert_before(html)
+            style.insert_before(html2)
 
-        metatag1 = soup.new_tag('meta')
-        metatag1.attrs['http-equiv'] = 'Cache-Control'
-        metatag1.attrs['content'] = 'no-cache, no-store, must-revalidate'
-        soup.head.append(metatag1)
+            metatag1 = soup.new_tag('meta')
+            metatag1.attrs['http-equiv'] = 'Cache-Control'
+            metatag1.attrs['content'] = 'no-cache, no-store, must-revalidate'
+            soup.head.append(metatag1)
 
-        metatag2 = soup.new_tag('meta')
-        metatag2.attrs['http-equiv'] = 'Pragma'
-        metatag2.attrs['content'] = 'no-cache'
-        soup.head.append(metatag2)
+            metatag2 = soup.new_tag('meta')
+            metatag2.attrs['http-equiv'] = 'Pragma'
+            metatag2.attrs['content'] = 'no-cache'
+            soup.head.append(metatag2)
 
-        metatag3 = soup.new_tag('meta')
-        metatag3.attrs['http-equiv'] = 'Expires'
-        metatag3.attrs['content'] = '0'
-        soup.head.append(metatag3)                
+            metatag3 = soup.new_tag('meta')
+            metatag3.attrs['http-equiv'] = 'Expires'
+            metatag3.attrs['content'] = '0'
+            soup.head.append(metatag3)                
 
-        newsoup = soup.prettify(formatter=None)
-        with open(filtered_filepath + filename+".html", 'w') as f:
-            f.write(str(newsoup))
+            newsoup = soup.prettify(formatter=None)
+            with open(filtered_filepath + filename+".html", 'w') as f:
+                f.write(str(newsoup))
 
 
         #print("Jquery added to current_data.html")
