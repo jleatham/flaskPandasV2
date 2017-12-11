@@ -71,35 +71,6 @@ home_file_path="/home/cisco/houston-pos-v2/"  #ubuntu server
 
 
 
-area_list = [['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South West Select Operation','SWSO'],
-             ['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South East Select Operation','SESO'],
-             ['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South Territory Operation','STO']]
-#Americas
-    #Canada
-    #Global Enterprise Segment
-    #Latin America
-    #US Commercial
-        #Commercial Central Area
-            #Central Select Operation
-            #Central Territory Op
-            #Midwest Select Op
-        #Commercial East Area
-            #Carolinas Select Op
-            #East Territory Op
-            #Northeast Territory Op
-            #Tristate Select Op
-        #Commercial West Area
-            #North Coast Select Op
-            #Pacific Coast Select Op
-            #West Area Territory Op
-        #Commercial South Area
-            #South East Select Operation
-            #South Territory Operation
-            #South West Select Operation
-
-
-    #US Other
-    #US PS Market Segment
 
 
 old_pos_file_path = home_file_path+'oldPOS/'
@@ -408,6 +379,8 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         REGION = str(v["SL5"])
         OPERATION = str(v["SL4"])
         AREA = str(v["SL3"])
+        SL2 = str(v["SL2"])
+        SL1 = str(v["SL1"])
         ACCOUNTS = [] #probably not needed but I added it when there were a few errors in the database
         for account in v["accounts"]:
             ACCOUNTS.append(str(account))
@@ -426,7 +399,9 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         results["Region"] = REGION
         results["Operation"] = OPERATION
         results["Area"] = AREA
-        results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area']]
+        results["SL2"] = SL2
+        results["SL1"] = SL1
+        results = results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area','SL2','SL1']]
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
 
 
@@ -438,8 +413,10 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
         non_error_results["Region"] = REGION
         non_error_results["Operation"] = OPERATION
         non_error_results["Area"] = AREA
+        non_error_results["SL2"] = SL2
+        non_error_results["SL1"] = SL1        
         #non_error_results.loc[:,'Region Sort'] = REGION
-        non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area']]
+        non_error_results = non_error_results[['POS ID','Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode','Region','Operation','Area','SL2','SL1']]
         non_error_results['Date'] = pd.to_datetime(non_error_results['Date'], errors='coerce')
 
         frames.append(results) #add each results df to list for cancat
@@ -893,10 +870,29 @@ def create_area_reports(ALLCSV,NONERRORCSV,OPLIST):
 
     #OPLIST has every SL1,2,3,4 in a list, as well as a duplicate with no spaces for filenames
     #iterate through each and create files for every SL level.
+    #I need to create a file for all segments as well, which means I need to know which SL level I am iterating
+    #so I can df search appropriately
+
+    #[[[SL1_1a,SL1_1b]],[[SL2_1a,SL2_1b],[SL2_2a,SL2_2b]]]
+    #the a entry is the actual name in db, the b is without spaces for file names
+    SL_loop = 0
     for SL in OPLIST:
+        SL_loop += 1
         for i in SL:
-            i_df = df[df["Operation"].str.contains(i[0])] #name of op
-            ne_i_df = ne_df[ne_df["Operation"].str.contains(i[0])]
+            if (SL_loop == 1):
+                i_df = df[df["SL1"].str.contains(i[0])] 
+                ne_i_df = ne_df[ne_df["SL1"].str.contains(i[0])]
+            elif (SL_loop == 2):
+                i_df = df[df["SL2"].str.contains(i[0])] 
+                ne_i_df = ne_df[ne_df["SL2"].str.contains(i[0])]    
+            elif (SL_loop == 3):
+                i_df = df[df["Area"].str.contains(i[0])] 
+                ne_i_df = ne_df[ne_df["Area"].str.contains(i[0])]
+            elif (SL_loop == 4):                           
+                i_df = df[df["Operation"].str.contains(i[0])] 
+                ne_i_df = ne_df[ne_df["Operation"].str.contains(i[0])]
+            else:
+                print("something wrong with report creating")
 
             #create monthly reports per operation
             #explanation for this is in old monthly report function
