@@ -275,6 +275,7 @@ def SL2_reports(SL1_page,SL2_page):
         report_runtime = curr_time
         recent_date,least_recent_date = get_time_frame(all_data_csv_filename)
 
+    page = "{0}/{1}".format(SL1_page,SL2_page)
     print("We made it here")
     print("We got globals"+str(op_list1))
     print("page we are looking for: "+page)
