@@ -127,7 +127,7 @@ def get_op_list():
         op_list.append([v["SL1"],v["SL2"],v["SL3"],v["SL4"]])
         op_list1.append([SL1,SL2,SL3,SL4])
 
-    op_list1 = op_list
+
     SL1_list = []
     SL2_list = []
     SL3_list = []
