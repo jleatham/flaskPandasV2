@@ -160,13 +160,16 @@ def reports(page):
         report_runtime = curr_time
         recent_date,least_recent_date = get_time_frame(all_data_csv_filename)
 
-
+    print("We made it here")
+    print("We got globals"+str(op_list1))
+    print("page we are looking for: "+page)
     for i in op_list1:
         page_list_SL1 = "{0}".format(i[0])
         page_list_SL2 = "{0}/{1}".format(i[0],i[1])
         page_list_SL3 = "{0}/{1}/{2}".format(i[0],i[1],i[2])
         page_list_SL4 = "{0}/{1}/{2}/{3}".format(i[0],i[1],i[2],i[3])
         if page==page_list_SL1:
+            print("went to SL1 if statement")
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
                 if "{0}_aggressive".format(i[0]) in filename:
@@ -188,6 +191,7 @@ def reports(page):
                 pageType = 'test'
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
         elif page==page_list_SL2:
+            print("went to SL2 if statement")
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
                 if "{1}_aggressive".format(i[1]) in filename:
@@ -209,6 +213,7 @@ def reports(page):
                 pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
         elif page==page_list_SL3:
+            print("went to SL3 if statement")
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
                 if "{2}_aggressive".format(i[2]) in filename:
@@ -230,6 +235,7 @@ def reports(page):
                 pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
         elif page==page_list_SL4:
+            print("went to SL4 if statement")
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
                 if "{3}_aggressive".format(i[3]) in filename:
