@@ -703,7 +703,7 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     for v in data.values():
         if v["email"] == EMAIL:
             account_list = v["accounts"]
-            operation = v["Operation"]
+            operation = v["SL4"]
             for SL in op_list[3]:
                 if SL[0] == operation:
                     operation = SL[1]
