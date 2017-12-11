@@ -183,7 +183,8 @@
                             type: 'POST',
                             timeout: 10000,
                             success: function(response){
-                                filter_return_json_to_list(response,email)
+                                //filter_return_json_to_list(response,email)
+                                filter_return_json_to_list_v2(response,email)
                                 $("#sort").show();
                             },
                             error: function(jqXHR, textStatus, errorThrown){

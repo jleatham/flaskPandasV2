@@ -418,7 +418,11 @@ def amlist():
             #print("AM list to modify: "+request.form['email'])
             #send the email and account to be added/removed, it will write to json, load new json into global var, and return
             am_list_json = update_single_am_account_list(request.form['email'],request.form['account'],request.form['action'])
-            return jsonify(am_list_json)
+            for v in am_list_json.values():
+                if v["email"] == request.form['email']:
+                    return jsonify({"accounts":v["accounts"]})
+            else:
+                return jsonify({"status":"Can't find that email"})            
         elif request.form['function'] == 'searchForm':
             print("Searching accounts for: "+request.form['email'])
             if request.form['email'] == 'test case': #to test the timeout of 10 seconds
@@ -429,7 +433,6 @@ def amlist():
             else:
                 return jsonify({"status":"Can't find that email"})
                 
-            return jsonify(am_list_json)
         elif request.form['function'] == 'runReport':
             #print("made it to runReport")
             status = update_single_am_results(request.form['email'],all_data_csv_filename)
