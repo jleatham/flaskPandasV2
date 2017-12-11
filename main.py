@@ -189,8 +189,7 @@ def SL1_reports(SL1_page):
             pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
-        else:
-            return "Could not find page"
+    return "Could not find page"
 
 
 
@@ -236,8 +235,7 @@ def SL2_reports(SL1_page,SL2_page):
             pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
-        else:
-            return "Could not find page"
+    return "Could not find page"
 
 
 @app.route('/reports/<SL1_page>/<SL2_page>/<SL3_page>')
@@ -281,8 +279,7 @@ def SL3_reports(SL1_page,SL2_page,SL3_page):
             pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
-        else:
-            return "Could not find page"
+    return "Could not find page"
 
 
 @app.route('/reports/<SL1_page>/<SL2_page>/<SL3_page>/<SL4_page>')
@@ -328,8 +325,7 @@ def SL4_reports(SL1_page,SL2_page,SL3_page,SL4_page):
             pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
-        else:
-            return "Could not find page"
+    return "Could not find page"
 
 
 
