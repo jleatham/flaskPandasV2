@@ -14,7 +14,7 @@
 ##    @reboot http-server /home/cisco/houston-pos/
 
 from POS_automation import * #includes list of accounts and am names to search, as well as variables to import
-
+global op_list
 
 
 #################Start main
