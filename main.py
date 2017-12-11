@@ -286,22 +286,22 @@ def SL2_reports(SL1_page,SL2_page):
             print("went to SL2 if statement")
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
-                if "{1}_aggressive".format(i[1]) in filename:
+                if "{0}_aggressive".format(i[1]) in filename:
                     agg_html_files.append(filename)     
-                elif "{1}_current".format(i[1]) in filename:
+                elif "{0}_current".format(i[1]) in filename:
                     current_filename = filename                
-                elif "{1}".format(i[1]) in filename:
+                elif "{0}".format(i[1]) in filename:
                     html_files.append(filename)
                 try: #my curl test throws error when the main report is running
                     agg_html_files = sorted(agg_html_files)
                     html_files = sorted(html_files) #sort list alphabetically
                     #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
                     #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
-                    html_files.append(html_files.pop(html_files.index("{1}_non_error_pos_data.html".format(i[1])))) #move to end of list
+                    html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[1])))) #move to end of list
                 except:
                     print("cannot process files as report is being ran")
-                title = "{1} Reports".format(i[1])
-                description = "Find mis-booked POS items for {1}".format(i[1])
+                title = "{0} Reports".format(i[1])
+                description = "Find mis-booked POS items for {0}".format(i[1])
                 pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
