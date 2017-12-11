@@ -1193,5 +1193,6 @@ def real_time_search(account,email,pos,party,searchAction):
     return {"status":"<p><a href='/realtimesearch/"+filename+".html'  target='_blank'>Search Results</a></p>"}
 
 
-
+op_list=[]
+op_list1=[]
 op_list,op_list1 = get_op_list() #set global
