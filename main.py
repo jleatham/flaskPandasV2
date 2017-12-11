@@ -305,7 +305,6 @@ def SL4_reports(SL1_page,SL2_page,SL3_page,SL4_page):
         if page==page_list_SL4:
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
-                print("{0}_aggressive".format(i[3]))
                 if "{0}_aggressive".format(i[3]) in filename:
                     agg_html_files.append(filename)     
                 elif "{0}_current".format(i[3]) in filename:
@@ -427,8 +426,8 @@ def amlist():
             for v in am_list_json.values():
                 if v["email"] == request.form['email']:
                     return jsonify({"accounts":v["accounts"]})
-                else:
-                    return jsonify({"status":"Can't find that email"})
+            else:
+                return jsonify({"status":"Can't find that email"})
                 
             return jsonify(am_list_json)
         elif request.form['function'] == 'runReport':
