@@ -737,7 +737,9 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     #print("creating account array")
     pos_list = set(pos_list)
     account_array = list(itertools.product(pos_list, account_list))        
-    for str(s1),str(s2) in account_array:
+    for s1,s2 in account_array:
+        s1 = str(s1)
+        s2 = str(s2)
         if (len(s2) <= 2):
             pass
         elif (len(s2) <= 4):
