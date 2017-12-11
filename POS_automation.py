@@ -129,7 +129,7 @@ sparkapi = CiscoSparkAPI(access_token=SPARK_ACCESS_TOKEN)
 roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vNjhiNzc1MTAtNjAxNi0xMWU3LWFlN2MtNGJlNjIzOTJiMWI0" #Python test room
 #roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vOWZjODRmMjAtN2QyYi0xMWU3LThmZjQtMWJhODMwMmUyODg3" #Houston POS room
 
-op_list,op_list1 = get_op_list()
+
 
 def get_op_list():
     if not (os.stat(am_list_json_filename).st_size == 0):
@@ -1191,3 +1191,7 @@ def real_time_search(account,email,pos,party,searchAction):
     end = time.time()
     print ("Time to process: "+ str(end - start))
     return {"status":"<p><a href='/realtimesearch/"+filename+".html'  target='_blank'>Search Results</a></p>"}
+
+
+
+op_list,op_list1 = get_op_list() #set global
