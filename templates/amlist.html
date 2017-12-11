@@ -199,7 +199,8 @@
                             type: 'POST',
                             timeout: 10000,
                             success: function(response){
-                                filter_return_json_to_list(response,email)
+                                //filter_return_json_to_list(response,email)
+                                filter_return_json_to_list_v2(response,email)
                                 $("#sort").show();
                             },
                             error: function(jqXHR, textStatus, errorThrown){
@@ -250,6 +251,25 @@
                         }
                             
                     }
+                    function filter_return_json_to_list_v2(response,email){
+                        var x = "";
+                        for (var key in response){
+                            if (key === "status"){
+                                x = response[key];
+                            }
+                            else if (key === "accounts"){
+                                for (var account in response[key]){
+                                    x += "<p>" + response[key][account] + "</p>";
+                                }
+                            }
+                        }
+                        if (x != ''){
+                            document.getElementById('display').innerHTML = x;
+                        } else {
+                            document.getElementById('display').innerHTML = "Could not find this CCO ID";
+                        }
+                            
+                    }                    
                 </script>
   </body>
 </html>

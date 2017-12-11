@@ -424,6 +424,12 @@ def amlist():
             print("Searching accounts for: "+request.form['email'])
             if request.form['email'] == 'test case': #to test the timeout of 10 seconds
                 time.sleep(11)
+            for v in am_list_json.values():
+                if v["email"] == request.form['email']:
+                    return jsonify({"accounts":v["accounts"]})
+                else:
+                    return jsonify({"status":"Can't find that email"})
+                
             return jsonify(am_list_json)
         elif request.form['function'] == 'runReport':
             #print("made it to runReport")
