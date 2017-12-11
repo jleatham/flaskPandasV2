@@ -299,10 +299,11 @@ def SL4_reports(SL1_page,SL2_page,SL3_page,SL4_page):
 
     page = "{0}/{1}/{2}/{3}".format(SL1_page,SL2_page,SL3_page,SL4_page)
     print("We made it here")
-    print("We got globals"+str(op_list1))
+    #print("We got globals"+str(op_list1))
     print("page we are looking for: "+page)
     for i in op_list1:
         page_list_SL4 = "{0}/{1}/{2}/{3}".format(i[0],i[1],i[2],i[3])
+        print("iteration : "+page_list_SL4)
 
         if page==page_list_SL4:
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
