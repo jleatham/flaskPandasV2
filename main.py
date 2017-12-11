@@ -176,17 +176,17 @@ def SL1_reports(SL1_page):
                     current_filename = filename                
                 elif "{0}".format(i[0]) in filename:
                     html_files.append(filename)
-                try: #my curl test throws error when the main report is running
-                    agg_html_files = sorted(agg_html_files)
-                    html_files = sorted(html_files) #sort list alphabetically
-                    #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
-                    #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
-                    html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[0])))) #move to end of list
-                except:
-                    print("cannot process files as report is being ran")
-                title = "{0} Reports".format(i[0])
-                description = "Find mis-booked POS items for {0}".format(i[0])
-                pageType = 'test'            
+            try: #my curl test throws error when the main report is running
+                agg_html_files = sorted(agg_html_files)
+                html_files = sorted(html_files) #sort list alphabetically
+                #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+                #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
+                html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[0])))) #move to end of list
+            except:
+                print("cannot process files as report is being ran")
+            title = "{0} Reports".format(i[0])
+            description = "Find mis-booked POS items for {0}".format(i[0])
+            pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
         else:
@@ -223,17 +223,17 @@ def SL2_reports(SL1_page,SL2_page):
                     current_filename = filename                
                 elif "{0}".format(i[1]) in filename:
                     html_files.append(filename)
-                try: #my curl test throws error when the main report is running
-                    agg_html_files = sorted(agg_html_files)
-                    html_files = sorted(html_files) #sort list alphabetically
-                    #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
-                    #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
-                    html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[1])))) #move to end of list
-                except:
-                    print("cannot process files as report is being ran")
-                title = "{0} Reports".format(i[1])
-                description = "Find mis-booked POS items for {0}".format(i[1])
-                pageType = 'test'            
+            try: #my curl test throws error when the main report is running
+                agg_html_files = sorted(agg_html_files)
+                html_files = sorted(html_files) #sort list alphabetically
+                #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+                #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
+                html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[1])))) #move to end of list
+            except:
+                print("cannot process files as report is being ran")
+            title = "{0} Reports".format(i[1])
+            description = "Find mis-booked POS items for {0}".format(i[1])
+            pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
         else:
@@ -268,17 +268,17 @@ def SL3_reports(SL1_page,SL2_page,SL3_page):
                     current_filename = filename                
                 elif "{0}".format(i[2]) in filename:
                     html_files.append(filename)
-                try: #my curl test throws error when the main report is running
-                    agg_html_files = sorted(agg_html_files)
-                    html_files = sorted(html_files) #sort list alphabetically
-                    #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
-                    #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
-                    html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[2])))) #move to end of list
-                except:
-                    print("cannot process files as report is being ran")
-                title = "{0} Reports".format(i[2])
-                description = "Find mis-booked POS items for {0}".format(i[2])
-                pageType = 'test'            
+            try: #my curl test throws error when the main report is running
+                agg_html_files = sorted(agg_html_files)
+                html_files = sorted(html_files) #sort list alphabetically
+                #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+                #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
+                html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[2])))) #move to end of list
+            except:
+                print("cannot process files as report is being ran")
+            title = "{0} Reports".format(i[2])
+            description = "Find mis-booked POS items for {0}".format(i[2])
+            pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
         else:
@@ -307,23 +307,24 @@ def SL4_reports(SL1_page,SL2_page,SL3_page,SL4_page):
         if page==page_list_SL4:
             for file in glob.glob(filtered_filepath + '/*.[Hh][Tt][Mm][Ll]'):
                 filename = os.path.basename(file)
+                print("{0}_aggressive".format(i[3]))
                 if "{0}_aggressive".format(i[3]) in filename:
                     agg_html_files.append(filename)     
                 elif "{0}_current".format(i[3]) in filename:
                     current_filename = filename                
                 elif "{0}".format(i[3]) in filename:
                     html_files.append(filename)
-                try: #my curl test throws error when the main report is running
-                    agg_html_files = sorted(agg_html_files)
-                    html_files = sorted(html_files) #sort list alphabetically
-                    #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
-                    #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
-                    html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[3])))) #move to end of list
-                except:
-                    print("cannot process files as report is being ran")
-                title = "{0} Reports".format(i[3])
-                description = "Find mis-booked POS items for {0}".format(i[3])
-                pageType = 'test'            
+            try: #my curl test throws error when the main report is running
+                agg_html_files = sorted(agg_html_files)
+                html_files = sorted(html_files) #sort list alphabetically
+                #html_files.insert(0,html_files.pop(html_files.index("current_data.html"))) #move to beginning of list
+                #html_files.pop(html_files.index("{1}_current_data.html".format(i[1]))) #remove from list as I put it as a button on page
+                html_files.append(html_files.pop(html_files.index("{0}_non_error_pos_data.html".format(i[3])))) #move to end of list
+            except:
+                print("cannot process files as report is being ran")
+            title = "{0} Reports".format(i[3])
+            description = "Find mis-booked POS items for {0}".format(i[3])
+            pageType = 'test'            
             return render_template('report_page.html', title=title, description=description, pageType=pageType,recent=recent_date,least_recent=least_recent_date,files=html_files,aggfiles=agg_html_files,current_filename=current_filename)
 
         else:
