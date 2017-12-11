@@ -737,7 +737,7 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     #print("creating account array")
     pos_list = set(pos_list)
     account_array = list(itertools.product(pos_list, account_list))        
-    for s1,s2 in account_array:
+    for str(s1),str(s2) in account_array:
         if (len(s2) <= 2):
             pass
         elif (len(s2) <= 4):
@@ -759,7 +759,10 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     #then concat all the dfs together like we do on v2 function,=.  That way we can see what we matched against.
     frames = []
     print("adding CSVs to master df")
-    for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'):
+
+    #for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'): #uncomment when done testing
+    test_file_list = ["US_POS_Report 01_08 to 24_08.csv","US POS Current Detailed Bookings Report_V1.0 _ 117952683_757818984988416547.csv"] #delete when done testing
+    for file in test_file_list:
         try:
             with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
                 text = f.read()
@@ -771,7 +774,7 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
             print (e)
 
 
-    frames.append(df)
+        frames.append(df)
     #concate all df's in frames
     for frame in frames:
         print("length of frame: "+str(len(frame.index)))
