@@ -69,6 +69,11 @@ currentlyProcessingReports = "0"
 #home_file_path="/Users/jleatham/Documents/Programming/Python/automation/POS/" #work laptop
 home_file_path="/home/cisco/houston-pos-v2/"  #ubuntu server
 
+
+
+area_list = [['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South West Select Operation','SWSO'],
+             ['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South East Select Operation','SESO'],
+             ['Americas','AMERICAS','US COMMERCIAL','USCOM','COMMERCIAL SOUTH AREA','CSA','South Territory Operation','STO']]
 #Americas
     #Canada
     #Global Enterprise Segment
@@ -124,6 +129,83 @@ sparkapi = CiscoSparkAPI(access_token=SPARK_ACCESS_TOKEN)
 roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vNjhiNzc1MTAtNjAxNi0xMWU3LWFlN2MtNGJlNjIzOTJiMWI0" #Python test room
 #roomId = "Y2lzY29zcGFyazovL3VzL1JPT00vOWZjODRmMjAtN2QyYi0xMWU3LThmZjQtMWJhODMwMmUyODg3" #Houston POS room
 
+op_list,op_list1 = get_op_list()
+
+def get_op_list():
+    if not (os.stat(am_list_json_filename).st_size == 0):
+        with open(am_list_json_filename) as data_file:
+            data = json.load(data_file)  
+    else:
+        data = {}
+
+    op_list = []
+    for v in data.values():
+        SL1 = v["SL1"]
+        SL1 = SL1.replace(" ","_")
+        SL1 = SL1.replace(".","")
+        SL2 = v["SL2"]
+        SL2 = SL2.replace(" ","_")
+        SL2 = SL2.replace(".","")        
+        SL3 = v["SL3"]
+        SL3 = SL3.replace(" ","_")
+        SL3 = SL3.replace(".","")        
+        SL4 = v["SL4"]
+        SL4 = SL4.replace(" ","_")
+        SL4 = SL4.replace(".","")           
+        op_list.append([v["SL1"],v["SL2"],v["SL3"],v["SL4"]])
+        op_list1.append([SL1,SL2,SL3,SL4])
+
+    op_list1 = op_list
+    SL1_list = []
+    SL2_list = []
+    SL3_list = []
+    SL4_list = []
+    for op in op_list:
+        SL1_list.append(op[0])
+        SL2_list.append(op[1])
+        SL3_list.append(op[2])
+        SL4_list.append(op[3])
+
+
+
+    SL1_list = sorted(list(set(SL1_list)))
+    SL2_list = sorted(list(set(SL2_list)))
+    SL3_list = sorted(list(set(SL3_list)))
+    SL4_list = sorted(list(set(SL4_list)))
+
+
+    
+    SL1_new= []
+    for SL1 in SL1_list:
+        SL1_changed = SL1
+        SL1_changed = SL1_changed.replace(" ","_")
+        SL1_changed = SL1_changed.replace(".","")
+        SL1_new.append([SL1,SL1_changed])
+
+    SL2_new= []
+    for SL2 in SL2_list:
+        SL2_changed = SL2
+        SL2_changed = SL2_changed.replace(" ","_")
+        SL2_changed = SL2_changed.replace(".","")
+        SL2_new.append([SL2,SL2_changed])
+
+    SL3_new= []
+    for SL3 in SL3_list:
+        SL3_changed = SL3
+        SL3_changed = SL3_changed.replace(" ","_")
+        SL3_changed = SL3_changed.replace(".","")
+        SL3_new.append([SL3,SL3_changed])
+
+    SL4_new= []
+    for SL4 in SL4_list:
+        SL4_changed = SL4
+        SL4_changed = SL4_changed.replace(" ","_")
+        SL4_changed = SL4_changed.replace(".","")
+        SL4_new.append([SL4,SL4_changed])
+
+    op_list = [SL1_new, SL2_new, SL3_new, SL4_new] 
+
+    return op_list,op_list1
 
 #not used
 def to_html_v1(ALLCSV, ALLHTML):
@@ -801,20 +883,61 @@ def create_monthly_csv(FILE):
     '''
 
 
-def create_area_reports(ALLCSV,NONERRORCSV):
-    #move this to global
-    area_list = [['CSA','SWSO','South West Select Operation'],
-                ['CSA','SESO','South East Select Operation'],
-                ['CSA','STO','South Territory Operation']]
+def create_area_reports(ALLCSV,NONERRORCSV,OPLIST):
+  
 
     df = pd.read_csv(ALLCSV).set_index("POS ID")
 
     ne_df = pd.read_csv(NONERRORCSV).set_index("POS ID")
 
+    #OPLIST has every SL1,2,3,4 in a list, as well as a duplicate with no spaces for filenames
+    #iterate through each and create files for every SL level.
+    for SL in OPLIST:
+        for i in SL:
+            i_df = df[df["Operation"].str.contains(i[0])] #name of op
+            ne_i_df = ne_df[ne_df["Operation"].str.contains(i[0])]
 
-    for operation in area_list:
-        op_df = df[df["Operation"].str.contains(operation[2])] #name of op
-        ne_op_df = ne_df[ne_df["Operation"].str.contains(operation[2])]
+            #create monthly reports per operation
+            #explanation for this is in old monthly report function
+            i_df['Date']= pd.to_datetime(i_df['Date']) #to parse the time column
+            min = i_df['Date'].min()
+            max = i_df['Date'].max()
+            ym_start= 12*min.year + min.month - 1 
+            ym_end= 12*max.year + max.month - 1 
+
+            for ym in range( ym_start, ym_end ):
+                y, m = divmod( ym, 12 )
+                df_month = i_df[(i_df['Date'].dt.month == m+1) & (i_df['Date'].dt.year == y)]
+                if not df_month.empty:
+                    #df_month.set_index('POS ID')
+                    t = datetime(y, m+1, 1)
+                    monthly_csv_filename = filtered_filepath+i[1]+"_"+t.strftime("%Y-%B-monthly-data.csv")
+                    with open(monthly_csv_filename, 'w') as f:
+                        df_month.to_csv(f)            
+                    print("Created file: "+i[1]+"_"+t.strftime("%Y-%B-monthly-data.csv"))  
+
+
+
+            #op_df.set_index('POS ID')
+            #ne_op_df.set_index('POS ID')
+
+
+
+
+            print("Filename: "+home_file_path+i[1]+"_"+all_data)
+            with open(filtered_filepath+i[1]+"_"+all_data, 'w') as f:
+                i_df.to_csv(f)
+            with open(filtered_filepath+i[1]+"_"+non_error_pos_data, 'w') as f:
+                ne_i_df.to_csv(f)
+
+
+
+
+
+    '''
+    for operation in OPLIST:
+        op_df = df[df["Operation"].str.contains(operation[6])] #name of op
+        ne_op_df = ne_df[ne_df["Operation"].str.contains(operation[6])]
 
         #create monthly reports per operation
         #explanation for this is in old monthly report function
@@ -830,10 +953,10 @@ def create_area_reports(ALLCSV,NONERRORCSV):
             if not df_month.empty:
                 #df_month.set_index('POS ID')
                 t = datetime(y, m+1, 1)
-                monthly_csv_filename = filtered_filepath+operation[1]+"_"+t.strftime("%Y-%B-monthly-data.csv")
+                monthly_csv_filename = filtered_filepath+operation[7]+"_"+t.strftime("%Y-%B-monthly-data.csv")
                 with open(monthly_csv_filename, 'w') as f:
                     df_month.to_csv(f)            
-                print("Created file: "+operation[1]+"_"+t.strftime("%Y-%B-monthly-data.csv"))  
+                print("Created file: "+operation[7]+"_"+t.strftime("%Y-%B-monthly-data.csv"))  
 
 
 
@@ -843,44 +966,11 @@ def create_area_reports(ALLCSV,NONERRORCSV):
 
 
 
-        print("Filename: "+home_file_path+operation[1]+"_"+all_data)
-        with open(filtered_filepath+operation[1]+"_"+all_data, 'w') as f:
+        print("Filename: "+home_file_path+operation[7]+"_"+all_data)
+        with open(filtered_filepath+operation[7]+"_"+all_data, 'w') as f:
             op_df.to_csv(f)
-        with open(filtered_filepath+operation[1]+"_"+non_error_pos_data, 'w') as f:
+        with open(filtered_filepath+operation[7]+"_"+non_error_pos_data, 'w') as f:
             ne_op_df.to_csv(f)
-
-
-    '''
-    df = pd.read_csv(ALLCSV).set_index("POS ID")
-    ne_df = pd.read_csv(NONERRORCSV).set_index("POS ID")
-    #print(df.head())
-    SWSO_df = df[df["Operation"].str.contains("South West Select Operation")]
-    STO_df = df[df["Operation"].str.contains("South Territory Operation")]
-    SESO_df = df[df["Operation"].str.contains("South East Select Operation")]
-
-    ne_SWSO_df = ne_df[ne_df["Operation"].str.contains("South West Select Operation")]
-    ne_STO_df = ne_df[ne_df["Operation"].str.contains("South Territory Operation")]
-    ne_SESO_df = ne_df[ne_df["Operation"].str.contains("South East Select Operation")]
-
-    print("Filename: "+home_file_path+"SWSO_"+all_data)
-    with open(filtered_filepath+"SWSO_"+all_data, 'w') as f:
-        SWSO_df.to_csv(f) 
-    print("Filename: "+home_file_path+"STO_"+all_data)
-    with open(filtered_filepath+"STO_"+all_data, 'w') as f:
-        STO_df.to_csv(f) 
-    print("Filename: "+home_file_path+"SESO_"+all_data)
-    with open(filtered_filepath+"SESO_"+all_data, 'w') as f:
-        SESO_df.to_csv(f) 
-
-    print("Filename: "+home_file_path+"SWSO_"+non_error_pos_data)
-    with open(filtered_filepath+"SWSO_"+non_error_pos_data, 'w') as f:
-        ne_SWSO_df.to_csv(f) 
-    print("Filename: "+home_file_path+"STO_"+non_error_pos_data)
-    with open(filtered_filepath+"STO_"+non_error_pos_data, 'w') as f:
-        ne_STO_df.to_csv(f) 
-    print("Filename: "+home_file_path+"SESO_"+non_error_pos_data)
-    with open(filtered_filepath+"SESO_"+non_error_pos_data, 'w') as f:
-        ne_SESO_df.to_csv(f) 
     '''
 
 #def move_last_year_files_to_dif_folder()
