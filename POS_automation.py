@@ -109,8 +109,8 @@ def get_op_list():
     else:
         data = {}
 
-    op_list = []
-    op_list1 = []
+    op_list = [] # used when we need to iterate each segment pair based on name and proposed filename(no spaces)
+    op_list1 = [] # used as a list of all the filenames
     for v in data.values():
         SL1 = v["SL1"]
         SL1 = SL1.replace(" ","_")
@@ -677,13 +677,9 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     #create file for an AMs levenshtein search, trying to get results to html page seem like too much work
     #run levenshtein function to get an aggressive search for an AM
     #post CSV to file list for them to go through at their leisure
-    global currentlyProcessingReports
+    global currentlyProcessingReports,op_list
     currentlyProcessingReports = "1"
-    print("Creating aggressive search for: "+EMAIL)
-    aggressive_search_file = filtered_filepath+EMAIL+"_aggressive_search.csv"
-    if os.path.isfile(aggressive_search_file):
-        os.remove(aggressive_search_file)
-        print("Removed old aggressive search file")
+
     
     start = time.time()
     
@@ -707,6 +703,15 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
     for v in data.values():
         if v["email"] == EMAIL:
             account_list = v["accounts"]
+            operation = v["Operation"]
+            for SL in op_list[3]:
+                if SL[0] == operation:
+                    operation = SL[1]
+            print("Creating aggressive search for: "+EMAIL)
+            aggressive_search_file = filtered_filepath+EMAIL+"_"+operation+"_aggressive_search.csv"
+            if os.path.isfile(aggressive_search_file):
+                os.remove(aggressive_search_file)
+                print("Removed old aggressive search file")            
 
     if not account_list:
         currentlyProcessingReports = "0"
@@ -737,39 +742,87 @@ def create_aggressive_search_csv_for_am(EMAIL,DISTANCE):
             pass
         elif (len(s2) <= 4):
             if(editdistance.eval(s1,s2) <= 1):
-                final_pos_list.append(s1)
+                final_pos_list.append([s1,s2])
         elif (len(s2) <= 12):
             if(editdistance.eval(s1,s2) <= 2):
-                final_pos_list.append(s1)
+                final_pos_list.append([s1,s2])
         elif (len(s2) <= 24):
             if(editdistance.eval(s1,s2) <= 2):
-                final_pos_list.append(s1)
+                final_pos_list.append([s1,s2])
         else:
             if(editdistance.eval(s1,s2) <= 3):
-                final_pos_list.append(s1)                                                               
+                final_pos_list.append([s1,s2])                                                               
     #print("creating file")
-
+    #take all files and add to single df like in v2 function
+    #take above and change to final_pos_list.append([s1,s2])
+    #iterate though master_df and search for s1 in customer list, add s2 as a column, save as a [df1,df2,df3,etc]
+    #then concat all the dfs together like we do on v2 function,=.  That way we can see what we matched against.
     for file in glob.glob(old_pos_file_path + '/*.[Cc][Ss][Vv]'):
-        df = pd.read_csv(file, encoding='cp1252',low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name"]).set_index("POS Transaction ID/Unique ID")
-        results = df[df['End Customer Source Customer Name'].isin(final_pos_list)]
-        results.index.names = ['POS ID']
-        results.rename(columns = {'Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
+        try:
+            with codecs.open(file,'r', 'windows-1252', errors="replace") as f:
+                text = f.read()
+            FILEDATA = StringIO(text)
+            df = pd.DataFrame() # create empty dataframe                       
+            df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name","Salesrep #"])
+        except Exception as e:
+            print ("file not readable in pandas: "+ file)
+            print (e)
+
+
+    frames.append(df)
+    #concate all df's in frames
+    for frame in frames:
+        print("length of frame: "+str(len(frame.index)))
+    master_df = pd.concat(frames, ignore_index=True)
+    #df = master_df #is this necessary, or can I call it df, even though all the concating files are df as well?
+    master_df.reset_index()
+    print("length of master frame: "+str(len(master_df.index)))
+    print("Added all files to master data frame for processing")
+
+    #filter out the data to process faster
+    temp_account_filter = []
+    for account in final_pos_list:
+        temp_account_filter.append(str(account[0]))
+    df = master_df[(master_df['End Customer Source Customer Name'].astype(str).isin(temp_account_filter)) | (master_df['Ship-To Source Customer Name'].astype(str).isin(temp_account_filter)) | (master_df['Sold-To Source Customer Name'].astype(str).isin(temp_account_filter)) ]
+
+    frames = [] #re-initialize frames so we can concat below df's
+
+    for account in final_pos_list:
+        results = df[(df['End Customer Source Customer Name'].astype(str).str.contains(account[0])) | (df['Ship-To Source Customer Name'].astype(str).str.contains(account[0])) | (df['Sold-To Source Customer Name'].astype(str).str.contains(account[0])) ]
+        #results.index.names = ['POS ID']
+        results.rename(columns = {'POS Transaction ID/Unique ID':'POS ID','Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
+        #results.rename(columns = {'Posted Date':'Date','POS Split Adjusted Value USD':'$$$','Ship-To Source Customer Name':'Ship-To','Sold-To Source Customer Name':'Sold-To','End Customer Source Customer Name':'End Customer','End Customer CR Party ID':'Party ID','POS SCA Mode':'Mode','Salesrep Name':'AM Credited'}, inplace=True)
         results["Sort Here"] = EMAIL
-        results = results[['Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode']]
+        results["Account Name"] = str(account[1])
+        results = results[['POS ID','Date','Sort Here','AM Credited','Account Name','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode']]
+        #results = results[['Date','Sort Here','AM Credited','End Customer','Product ID','$$$','Ship-To','Sold-To','Party ID','Mode']]
         results['Date'] = pd.to_datetime(results['Date'], errors='coerce')
-        if os.path.isfile(aggressive_search_file):
-            with open(aggressive_search_file, 'a') as f:
-                results.to_csv(f, header=False)
-                #print("result loop posted")
-        else:
-            results.to_csv(aggressive_search_file)
+
+        frames.append(results) #add each results df to list for cancat
+
+    print("finished all searches, adding to CSV")
+    #add the respective dfs together using concat
+    master_results = pd.concat(frames, ignore_index=True)
+    master_results.reset_index()
+
+
+    #change the index before writing to CSV
+    #master_results.set_index("POS ID")
+    #master_non_error_results.set_index("POS ID")
+    print("size of results = "+str(len(master_results.index)))
+
+    #write respective dfs to CSV
+    if os.path.isfile(aggressive_search_file):
+        with open(aggressive_search_file, 'a') as f:
+            master_results.to_csv(f, header=False,index=False)
             #print("result loop posted")
+    else:
+        master_results.to_csv(aggressive_search_file, index=False)
+        #print("result loop posted")
 
-
-    create_html_tables()
     end = time.time()
     print ("Time to process: "+ str(end - start)) 
-
+    create_html_tables()
     currentlyProcessingReports = "0"
     return ("completed in "+ str(end - start)+" seconds")
 
