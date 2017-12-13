@@ -141,21 +141,21 @@ def temp_remove_lines_from_logs():
     print("finished loop")
 
 
-schedule.every(1).minutes.do(check_pos_status)
-#schedule.every(1).minutes.do(check_pos_status_s2)
-schedule.every(5).minutes.do(check_for_new_pos_files)
-#schedule.every(5).minutes.do(check_for_new_pos_files_s2)
-schedule.every().hour.do(remove_lines_from_logs)
-#schedule.every().hour.do(remove_lines_from_logs_s2)
+#schedule.every(1).minutes.do(check_pos_status)
+schedule.every(1).minutes.do(check_pos_status_s2)
+#schedule.every(5).minutes.do(check_for_new_pos_files)
+schedule.every(5).minutes.do(check_for_new_pos_files_s2)
+#schedule.every().hour.do(remove_lines_from_logs)
+schedule.every().hour.do(remove_lines_from_logs_s2)
 #schedule.every().day.at("3:30").do(check_for_new_pos_files)
 #schedule.every().monday.do(job)
 #schedule.every().wednesday.at("13:15").do(job)
 
 #run once on startup
-check_pos_status() 
-#check_pos_status_s2()
-remove_lines_from_logs()
-#remove_lines_from_logs_s2()
+#check_pos_status() 
+check_pos_status_s2()
+#remove_lines_from_logs()
+remove_lines_from_logs_s2()
 #temp_remove_lines_from_logs()
 
 
