@@ -526,7 +526,7 @@ def realtimepath(path):
     return send_from_directory(real_time_search_file_path,path)
 
 
-if __name__ == "__main__":
+if __name__ == "__main2__":
     am_list_json = flask_load_json_to_mem(am_list_json_filename) #load json into memory
     #app.run(host='0.0.0.0',debug=True)
     app.run(host='0.0.0.0',threaded=True, port=5001)
