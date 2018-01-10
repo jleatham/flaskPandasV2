@@ -5,6 +5,9 @@ import re
 import datetime
 import requests
 
+port = '5000'
+directory = '/home/cisco/houston-pos-v2/'
+version = '2' # main vs main2 etc, for main.py use ''
 
 search_strings_to_remove = ["127.0.0.1",
                             "foundation.css",
@@ -35,30 +38,21 @@ search_strings_to_remove = ["127.0.0.1",
 
 def check_pos_status():
     try:
-        r = requests.head("http://0.0.0.0:5000")
+        r = requests.head("http://0.0.0.0:"+port)
         #print(r.status_code)
         # prints the int of the status code. Find more at httpstatusrappers.com :)
     except requests.ConnectionError:
         #print("failed to connect")
         restart_pos_server()
 
-def check_pos_status_s2():
-    try:
-        r = requests.head("http://0.0.0.0:5001")
-        #print(r.status_code)
-        # prints the int of the status code. Find more at httpstatusrappers.com :)
-    except requests.ConnectionError:
-        #print("failed to connect")
-        restart_pos_server_s2()
-
 
 
 def restart_pos_server():
     now = datetime.datetime.now()
     print(now.strftime("%Y-%h-%d---%H:%M %p"))
-    os.system("kill $(ps aux | grep '[m]ain.py' | awk '{print $2}')") #alias to search ps aux and kill main.py
+    os.system("kill $(ps aux | grep '[m]ain"+version+".py' | awk '{print $2}')") #alias to search ps aux and kill main.py
     time.sleep(1)
-    os.system('nohup /usr/bin/python3 -u /home/cisco/houston-pos/main.py &') #alias to nohup start main.py
+    os.system('nohup /usr/bin/python3 -u '+directory+'main'+version+'.py &') #alias to nohup start main.py
     print('restarting POS server')    
     
     """
@@ -76,21 +70,13 @@ def restart_pos_server():
         print('restarting POS server')
     """
 
-def restart_pos_server_s2():
-    now = datetime.datetime.now()
-    print(now.strftime("%Y-%h-%d---%H:%M %p"))
-    os.system("kill $(ps aux | grep '[m]ain2.py' | awk '{print $2}')") #alias to search ps aux and kill main.py
-    time.sleep(1)
-    os.system('nohup /usr/bin/python3 -u /home/cisco/houston-pos-v2/main2.py &') #alias to nohup start main.py
-    print('restarting POS server')    
-    
 
 
 def remove_lines_from_logs():
-    f = open("/home/cisco/houston-pos/pos_log.out","r")
+    f = open(directory+"pos_log.out","r")
     lines = f.readlines()
     f.close()
-    f = open("/home/cisco/houston-pos/pos_log.out","w")
+    f = open(directory+"pos_log.out","w")
     #print("starting loop")
     for line in lines:
         found_string = False
@@ -102,28 +88,11 @@ def remove_lines_from_logs():
     f.close()
     #print("finished loop")
 
-def remove_lines_from_logs_s2():
-    f = open("/home/cisco/houston-pos-v2/pos_log.out","r")
-    lines = f.readlines()
-    f.close()
-    f = open("/home/cisco/houston-pos-v2/pos_log.out","w")
-    #print("starting loop")
-    for line in lines:
-        found_string = False
-        for search_string in search_strings_to_remove:
-            if search_string in line:
-                found_string = True
-        if not found_string:
-            f.write(line)
-    f.close()
-    #print("finished loop")
 
 
 def check_for_new_pos_files():
-    os.system("/usr/bin/python3 /home/cisco/houston-pos/POS_filter.py")
+    os.system("/usr/bin/python3 "+directory+"POS_filter.py")
 
-def check_for_new_pos_files_s2():
-    os.system("/usr/bin/python3 /home/cisco/houston-pos-v2/POS_filter.py")
 
 
 def temp_remove_lines_from_logs():
@@ -142,20 +111,20 @@ def temp_remove_lines_from_logs():
 
 
 #schedule.every(1).minutes.do(check_pos_status)
-schedule.every(1).minutes.do(check_pos_status_s2)
+schedule.every(1).minutes.do(check_pos_status)
 #schedule.every(5).minutes.do(check_for_new_pos_files)
-schedule.every(5).minutes.do(check_for_new_pos_files_s2)
+schedule.every(5).minutes.do(check_for_new_pos_files)
 #schedule.every().hour.do(remove_lines_from_logs)
-schedule.every().hour.do(remove_lines_from_logs_s2)
+schedule.every().hour.do(remove_lines_from_logs)
 #schedule.every().day.at("3:30").do(check_for_new_pos_files)
 #schedule.every().monday.do(job)
 #schedule.every().wednesday.at("13:15").do(job)
 
 #run once on startup
 #check_pos_status() 
-check_pos_status_s2()
+check_pos_status()
 #remove_lines_from_logs()
-remove_lines_from_logs_s2()
+remove_lines_from_logs()
 #temp_remove_lines_from_logs()
 
 
