@@ -18,7 +18,7 @@
 #           python script that can call functions in POS_automation
 #
 #
-#   v1 Candidate.  SWSO only
+#   v2 Candidate.  added all of CSA
 #
 
 ##########################################################################################################
@@ -304,34 +304,40 @@ def to_csv_from_json_v2(FILES,ALLCSV,NONERRORCSV):
                 FILEDATA = StringIO(text)
                 df = pd.DataFrame() # create empty dataframe                       
                 df = pd.read_csv(FILEDATA,low_memory=False, usecols=["POS Transaction ID/Unique ID","Posted Date",	'POS Split Adjusted Value USD', 'Product ID','POS SCA Mode','Ship-To Source Customer Name','Sold-To Source Customer Name',"End Customer Source Customer Name","End Customer CR Party ID","Salesrep Email","Salesrep Name","Salesrep #"])
-                shutil.move(file, old_pos_file_path+filename)
+                shutil.move(file, old_pos_file_path+filename) #if errors, this will move but program crash means data not actually processed.  Might need to move to end of function
                 print ("processed: "+filename)
+                frames.append(df) 
             except Exception as e:
                 print ("file not readable in pandas: "+ file)
                 print (e)
                 print("Trying to fix")
                 #check if csv headers are not 1st line
                 #will rewrite the file and the program will try again next time it checks for new files
-                df2 = pd.read_csv(FILEDATA)
-                i = 0
-                if "POS Transaction ID/Unique ID" not in df.columns:
-                    while i < 4:
-                        df2 = pd.read_csv(FILEDATA,skiprows=[i])
-                        if "POS Transaction ID/Unique ID" not in df2.columns:
-                            print("Couldn't find POS data in row "+str(i))
-                            i += 1
-                        else:
-                            print("Found POS data in row "+str(i))
-                            i = 5
-                            with open(file, 'w') as f:
-                                df2.to_csv(f, index=False)
-                                print("re-wrote file: "+filename)
-                else:
-                    print("headers are correct, not sure the issue")
-                #end check   
-
+                try:
+                    df2 = pd.read_csv(FILEDATA)
+                    i = 0
+                    if "POS Transaction ID/Unique ID" not in df.columns:
+                        while i < 4:
+                            df2 = pd.read_csv(FILEDATA,skiprows=[i])
+                            if "POS Transaction ID/Unique ID" not in df2.columns:
+                                print("Couldn't find POS data in row "+str(i))
+                                i += 1
+                            else:
+                                print("Found POS data in row "+str(i))
+                                i = 5
+                                with open(file, 'w') as f:
+                                    df2.to_csv(f, index=False)
+                                    print("re-wrote file: "+filename)
+                    else:
+                        print("headers are correct, not sure the issue")
+                    #end check  
+                except Exception as e:
+                    print (e)
+                    print ("could not fix file: "+ file)
+                    msg = "could not fix file: "+ file
+                    send_msg_to_spark(roomId,msg)
             #add newly created dataframe to frames list
-            frames.append(df) #will this work if the name is the same each time?  If not, just create a list with names
+            
             # dynamically populated and then put the df data into each
         else: #file is a duplicate
             print("file already exists in " +old_pos_file_path+": "+filename+"  ...removing")
@@ -934,6 +940,9 @@ def send_link_to_spark(ROOMID):
     msg="To download the latest POS file with all data: " +server_address+all_data
     sparkapi.messages.create(ROOMID, text=msg)
     msg="To browse older POS files by month: " +server_address
+    sparkapi.messages.create(ROOMID, text=msg)
+
+def send_msg_to_spark(ROOMID, msg):
     sparkapi.messages.create(ROOMID, text=msg)
 
 def create_monthly_csv(FILE):
